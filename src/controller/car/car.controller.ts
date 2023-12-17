@@ -81,6 +81,7 @@ export class CarController {
     return CarDTO.fromModel(car)
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Create a new car.',
   })
@@ -102,6 +103,7 @@ export class CarController {
     throw new NotImplementedException()
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Update an existing car.',
   })

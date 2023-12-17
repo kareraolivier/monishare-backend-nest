@@ -23,6 +23,7 @@ export class CarService implements ICarService {
     this.logger = new Logger(CarService.name)
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
     throw new Error('Not implemented')
   }
@@ -44,6 +45,7 @@ export class CarService implements ICarService {
     )
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async update(
     _carId: CarID,
     _updates: Partial<Except<CarProperties, 'id'>>,

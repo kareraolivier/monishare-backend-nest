@@ -65,6 +65,7 @@ export class CarRepository implements ICarRepository {
     return rows.map(row => rowToDomain(row))
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async findByLicensePlate(
     _tx: Transaction,
     _licensePlate: string,
@@ -72,10 +73,12 @@ export class CarRepository implements ICarRepository {
     throw new Error('Not implemented')
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async update(_tx: Transaction, _car: Car): Promise<Car> {
     throw new Error('Not implemented')
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async insert(
     _tx: Transaction,
     _car: Except<CarProperties, 'id'>,
