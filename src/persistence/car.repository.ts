@@ -40,9 +40,6 @@ function rowToDomain(row: Row): Car {
   })
 }
 
-// Please remove the next line when implementing this file.
-/* eslint-disable @typescript-eslint/require-await */
-
 @Injectable()
 export class CarRepository implements ICarRepository {
   public async find(tx: Transaction, id: CarID): Promise<Car | null> {
