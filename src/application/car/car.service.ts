@@ -40,6 +40,7 @@ export class CarService implements ICarService {
   }
 
   public async get(id: CarID): Promise<Car> {
+    this.logger.verbose(`Loading the car with id ${id}`)
     return this.databaseConnection.transactional(tx =>
       this.carRepository.get(tx, id),
     )
