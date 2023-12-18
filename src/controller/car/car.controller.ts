@@ -46,15 +46,18 @@ export class CarController {
     this.carService = carService
   }
 
-  // Please remove the next line when implementing this file.
-  /* eslint-disable @typescript-eslint/require-await */
-
   @ApiOperation({
     summary: 'Retrieve all cars.',
   })
+  @ApiOkResponse({
+    description: 'The request was successful',
+    type: [CarDTO],
+  })
   @Get()
   public async getAll(): Promise<CarDTO[]> {
-    throw new NotImplementedException()
+    const cars = await this.carService.getAll()
+
+    return cars.map(car => CarDTO.fromModel(car))
   }
 
   @ApiOperation({
@@ -72,10 +75,13 @@ export class CarController {
     description: 'No car with the given id was found.',
   })
   @Get(':id')
-  public async get(@Param('id', ParseIntPipe) _id: CarID): Promise<CarDTO> {
-    throw new NotImplementedException()
+  public async get(@Param('id', ParseIntPipe) id: CarID): Promise<CarDTO> {
+    const car = await this.carService.get(id)
+
+    return CarDTO.fromModel(car)
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Create a new car.',
   })
@@ -97,6 +103,7 @@ export class CarController {
     throw new NotImplementedException()
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Update an existing car.',
   })

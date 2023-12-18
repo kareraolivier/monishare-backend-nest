@@ -10,7 +10,7 @@ import {
   type ICarRepository,
   type UserID,
 } from '../application'
-import { Car } from '../application/car'
+import { Car, CarNotFoundError } from '../application/car'
 
 import { type Transaction } from './database-connection.interface'
 
@@ -26,8 +26,6 @@ type Row = {
   info: string | null
 }
 
-// Please remove the next line when implementing this file.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function rowToDomain(row: Row): Car {
   return new Car({
     id: row.id as CarID,
@@ -42,23 +40,32 @@ function rowToDomain(row: Row): Car {
   })
 }
 
-// Please remove the next line when implementing this file.
-/* eslint-disable @typescript-eslint/require-await */
-
 @Injectable()
 export class CarRepository implements ICarRepository {
-  public async find(_tx: Transaction, _id: CarID): Promise<Car | null> {
-    throw new Error('Not implemented')
+  public async find(tx: Transaction, id: CarID): Promise<Car | null> {
+    const maybeRow = await tx.oneOrNone<Row>(
+      'SELECT * FROM cars WHERE id = $(id)',
+      { id },
+    )
+
+    return maybeRow ? rowToDomain(maybeRow) : null
   }
 
-  public async get(_tx: Transaction, _id: CarID): Promise<Car> {
-    throw new Error('Not implemented')
+  public async get(tx: Transaction, id: CarID): Promise<Car> {
+    const car = await this.find(tx, id)
+
+    if (!car) throw new CarNotFoundError(id)
+
+    return car
   }
 
-  public async getAll(_tx: Transaction): Promise<Car[]> {
-    throw new Error('Not implemented')
+  public async getAll(tx: Transaction): Promise<Car[]> {
+    const rows = await tx.any<Row>('SELECT * FROM cars')
+
+    return rows.map(row => rowToDomain(row))
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async findByLicensePlate(
     _tx: Transaction,
     _licensePlate: string,
@@ -66,10 +73,12 @@ export class CarRepository implements ICarRepository {
     throw new Error('Not implemented')
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async update(_tx: Transaction, _car: Car): Promise<Car> {
     throw new Error('Not implemented')
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   public async insert(
     _tx: Transaction,
     _car: Except<CarProperties, 'id'>,
