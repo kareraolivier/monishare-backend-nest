@@ -23,9 +23,9 @@ export class CarService implements ICarService {
     this.logger = new Logger(CarService.name)
   }
 
-  // Please remove the next line when implementing this file.
-  /* eslint-disable @typescript-eslint/require-await */
 
+ // Please remove the next line when implementing this file.
+  /* eslint-disable @typescript-eslint/require-await */
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
     return await this.databaseConnection.transactional(tx =>
       this.carRepository.insert(tx,_data));
