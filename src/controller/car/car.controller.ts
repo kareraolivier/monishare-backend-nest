@@ -46,7 +46,6 @@ export class CarController {
     this.carService = carService
   }
 
-  // Please remove the next line when implementing this file.
 
   @ApiOperation({
     summary: 'Retrieve all cars.',
