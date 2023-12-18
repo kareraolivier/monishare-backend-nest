@@ -27,6 +27,7 @@ module.exports = {
   env: {
     node: true,
   },
+  ignorePatterns: ['.eslintrc.js', '.eslintrc.json'],
   rules: {
     'prettier/prettier': 'off',
     'unicorn/no-array-callback-reference': 'off',

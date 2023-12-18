@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import {
+  CarNotFoundError,
+  Car,
   type CarID,
   type CarProperties,
   type CarState,
@@ -10,6 +12,7 @@ import {
   type ICarRepository,
   type UserID,
 } from '../application'
+
 import { Car, CarNotFoundError } from '../application/car'
 
 import { type Transaction } from './database-connection.interface'
@@ -75,7 +78,25 @@ export class CarRepository implements ICarRepository {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async update(_tx: Transaction, _car: Car): Promise<Car> {
-    throw new Error('Not implemented')
+    const row = await _tx.oneOrNone<Row>(
+      `
+      UPDATE cars SET
+        name = $(name),
+        state = $(state),
+        fuel_type= $(fuelType),
+        horsepower= $(horsepower),
+        license_plate= $(licensePlate),
+        info= $(info)
+      WHERE
+        id = $(id)
+       RETURNING *`,
+      { ..._car },
+    )
+
+    if (row === null) {
+      throw new CarNotFoundError(_car.id)
+    }
+    return rowToDomain(row)
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
