@@ -116,6 +116,7 @@ export class CarController {
     @Param('id', ParseIntPipe) _carId: CarID,
     @Body() _data: PatchCarDTO,
   ): Promise<CarDTO> {
-    throw new NotImplementedException()
+    const car = await this.carService.update(_carId, _data, _user.id)
+    return CarDTO.fromModel(car)
   }
 }
