@@ -1,101 +1,102 @@
-import { HttpStatus, INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import request from 'supertest';
+//After using all imports delete the following two lines
 
-import { CarBuilder, UserBuilder } from '../../builders';
+/* eslint-disable import/order */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+import { HttpStatus, INestApplication } from '@nestjs/common'
+import { Test } from '@nestjs/testing'
+import request from 'supertest'
+import { type CarID, CarNotFoundError, ICarService } from '../../application'
+import { CarBuilder, UserBuilder } from '../../builders'
 import {
   AuthenticationGuardMock,
   type CarServiceMock,
   mockCarService,
-} from '../../mocks';
-import { configureGlobalEnhancers } from '../../setup-app';
-import { AuthenticationGuard } from '../authentication.guard';
-import { CarController } from './car.controller';
-import { FuelType } from '../../application';
-import { CarState, ICarService } from '../../application/car';
+} from '../../mocks'
+import { configureGlobalEnhancers } from '../../setup-app'
+import { AuthenticationGuard } from '../authentication.guard'
+
+import { CarController } from './car.controller'
 
 describe('CarController', () => {
-  const user = UserBuilder.from({ id: 2, name: 'peter' }).build();
+  const user = UserBuilder.from({
+    id: 42,
+    name: 'peter',
+  }).build()
 
-  let app: INestApplication;
-  let carServiceMock: CarServiceMock;
-  let authenticationGuardMock: AuthenticationGuardMock;
+  const carOne = CarBuilder.from({
+    id: 13,
+    horsepower: 121,
+    licensePlate: 'RA-112',
+    info: 'no smokings',
+  }).build()
+  const carTwo = CarBuilder.from({
+    id: 43,
+    horsepower: 120,
+    licensePlate: 'RA-12',
+    info: 'no smoking',
+  }).build()
+
+  let app: INestApplication
+  let carServiceMock: CarServiceMock
+  let authenticationGuardMock: AuthenticationGuardMock
 
   beforeEach(async () => {
-    carServiceMock = mockCarService();
-    authenticationGuardMock = new AuthenticationGuardMock(user);
+    carServiceMock = mockCarService()
+    authenticationGuardMock = new AuthenticationGuardMock(user)
 
     const moduleReference = await Test.createTestingModule({
       controllers: [CarController],
       providers: [
         {
-          provide: ICarService, 
+          provide: ICarService,
           useValue: carServiceMock,
         },
       ],
     })
       .overrideGuard(AuthenticationGuard)
       .useValue(authenticationGuardMock)
-      .compile();
+      .compile()
 
-    app = moduleReference.createNestApplication();
-    await configureGlobalEnhancers(app).init();
-  });
+    app = moduleReference.createNestApplication()
 
-  afterEach(() => app.close());
+    await configureGlobalEnhancers(app).init()
+  })
 
-  describe('create', () => {
-    it('should create a new car', async () => {
-      const newCar = CarBuilder.from({
-        carTypeId:1,
-        name:"blahblah",
-        fuelType:FuelType.PETROL,
-        horsepower:2,
-        licensePlate:"kelvayi",
-        info:"no smoking" 
-           }).build();
-      carServiceMock.create.mockResolvedValue(newCar);
+  afterEach(() => app.close())
+
+  describe('update', () => {
+    const carId = 3
+    it('should get 404 not found when route is not right', async () => {
+      await request(app.getHttpServer())
+        .patch(`/car/${carId}`)
+        .expect(HttpStatus.NOT_FOUND)
+    })
+
+    it('should update a new car  if the user is an administrator', async () => {
+      const carId = 42
+      const newUpdatedCar = new CarBuilder().withId(carId).build()
+      carServiceMock.update.mockResolvedValue(newUpdatedCar)
+
+      authenticationGuardMock.user = UserBuilder.from(user).build()
 
       await request(app.getHttpServer())
-        .post('/cars')
+        .patch(`/cars/${carId}`)
         .send({
-
-        carTypeId:newCar.carTypeId,
-        name:newCar.name,
-        fuelType:newCar.fuelType,
-        horsepower:newCar.horsepower,
-        licensePlate:newCar.licensePlate,
-        info:newCar.info
+          ...newUpdatedCar,
+          name: newUpdatedCar.name,
+          horsepower: newUpdatedCar.horsepower,
+          licensePlate: newUpdatedCar.licensePlate,
+          info: newUpdatedCar.info,
         })
-        .expect(HttpStatus.CREATED)
-        .expect({ ...newCar });
+        .expect(HttpStatus.OK)
+        .expect({ ...newUpdatedCar })
 
-      expect(carServiceMock.create).toHaveBeenCalledWith({
-        carTypeId:1,
-        name:"blahblah",
-        fuelType:FuelType.PETROL,
-        horsepower:2,
-        licensePlate:"kelvayi",
-        info:"no smoking", 
-        ownerId: 2,
-        state: CarState.LOCKED,
-      });
-    });
-
-    it('should return a 400 for a bad request', async () => {
-      await request(app.getHttpServer())
-        .post('/cars')
-        .send({ 
-            carTypeId:"1",
-            name:"blahblah",
-            fuelType:FuelType.PETROL,
-            horsepower:2,
-            licensePlate:"kelvayi",
-            info:"no smoking" 
-    
-        })
-        .expect(HttpStatus.BAD_REQUEST);
-    });
-
-  });
-});
+      expect(carServiceMock.update).toHaveBeenCalledWith(
+        carId,
+        newUpdatedCar,
+        carId,
+      )
+    })
+  })
+})
