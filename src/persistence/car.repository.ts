@@ -13,8 +13,6 @@ import {
   type UserID,
 } from '../application'
 
-import { Car, CarNotFoundError } from '../application/car'
-
 import { type Transaction } from './database-connection.interface'
 
 type Row = {
