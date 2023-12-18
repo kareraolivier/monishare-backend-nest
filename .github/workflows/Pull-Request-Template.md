@@ -1,0 +1,36 @@
+# PR Description
+
+Please include a brief description of the pull request you want to raise.
+
+## Description of tasks that were expected to be completed
+
+List all the tasks and sub-tasks that were assigned to you Make sure you check every completed task. list them in this style
+
+- [ ] Create .....
+- [ ] Add .....
+- [ ] ......
+
+## Description of tasks that were expected to be completed and that are not yet completed
+
+- [ ] Create .....
+- [ ] Add .....
+- [ ] ......
+
+## How this may be tested?
+
+Please describe the tests that you ran to verify your functionalities. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
+
+1. run `npm i` to install all required dependencies
+2. run `npm run db:start`
+3. run `npm run db:migrate-up`
+4. run `npm run db:load-fixture`
+5. run `npm run start:dev`
+6. step 6...
+
+## Please check this Checklist before you submit your PR:
+
+- [ ] My code follows the style guidelines of this project
+- [ ] I have performed a self-review of my code
+- [ ] I have commented on my code, particularly in hard-to-understand areas
+- [ ] My code generates no warnings
+- [ ] There are no vulnerabilities
