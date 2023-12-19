@@ -31,7 +31,7 @@ export class CarService implements ICarService {
     this.logger = new Logger(CarService.name)
   }
 
-  //cheack duplicate lisence plate
+  //check duplicate lisence plate
   public async checkForDuplicateLicensePlate(
     _licensePlate: string,
   ): Promise<void> {
