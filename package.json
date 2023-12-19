@@ -20,9 +20,11 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/src/main",
-    "db:start": "docker run --rm --detach --publish=5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=monishare --name monishare --mount type=bind,source=\"%cd%/fixture\",target=/fixture,readonly postgres:15-alpine",
+    "db:start": "docker run --rm --detach --publish=5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=monishare --name monishare --mount type=bind,source=\"$(pwd)/fixture\",target=/fixture,readonly postgres:15-alpine",
+    "db:start-windows": "docker run --rm --detach --publish=5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=monishare --name monishare --mount type=bind,source=\"%cd%/fixture\",target=/fixture,readonly postgres:15-alpine",
     "db:migrate-up": "node-pg-migrate --config-file pgmigrate.config.json up",
-    "db:load-fixture": "docker exec monishare /bin/bash -c \"find /fixture -type f | sort | xargs -I {} psql --username=postgres --dbname monishare -f {}\"",
+    "db:load-fixture": "docker exec monishare /bin/bash -c 'find /fixture -type f | sort | xargs -I {} psql --username=postgres --dbname monishare -f {}'",
+
     "db:stop": "docker rm -f monishare",
     "lint": "npm run lint:tsc && npm run lint:eslint && npm run lint:prettier",
     "lint:eslint": "eslint \"{src,migrations,test}/**/*.ts\"",

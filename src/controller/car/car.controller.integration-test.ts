@@ -1,12 +1,8 @@
-//After using all imports delete the following two lines
-
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { HttpStatus, INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
 import request from 'supertest'
-import { type CarID, CarNotFoundError, ICarService } from '../../application'
+
+import { ICarService } from '../../application'
 import { CarBuilder, UserBuilder } from '../../builders'
 import {
   AuthenticationGuardMock,
@@ -22,19 +18,6 @@ describe('CarController', () => {
   const user = UserBuilder.from({
     id: 42,
     name: 'peter',
-  }).build()
-
-  const carOne = CarBuilder.from({
-    id: 13,
-    horsepower: 121,
-    licensePlate: 'RA-112',
-    info: 'no smokings',
-  }).build()
-  const carTwo = CarBuilder.from({
-    id: 43,
-    horsepower: 120,
-    licensePlate: 'RA-12',
-    info: 'no smoking',
   }).build()
 
   let app: INestApplication
