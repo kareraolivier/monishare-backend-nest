@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Get,
-  NotImplementedException,
+  // NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -22,7 +22,13 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { Car, type CarID, ICarService, type User, CarState } from '../../application'
+import {
+  Car,
+  type CarID,
+  ICarService,
+  type User,
+  CarState,
+} from '../../application'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -100,13 +106,13 @@ export class CarController {
     @CurrentUser() _owner: User,
     @Body() _data: CreateCarDTO,
   ): Promise<CarDTO> {
-      const augmentedData = {
-        ..._data,
-        ownerId: _owner.id, 
-        state:CarState.LOCKED, 
-      };
-      const createdCar = await this.carService.create( augmentedData);
-      return createdCar;
+    const augmentedData = {
+      ..._data,
+      ownerId: _owner.id,
+      state: CarState.LOCKED,
+    }
+    const createdCar = await this.carService.create(augmentedData)
+    return createdCar
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

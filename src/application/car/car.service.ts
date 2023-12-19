@@ -25,8 +25,8 @@ export class CarService implements ICarService {
 
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
     return await this.databaseConnection.transactional(tx =>
-      this.carRepository.insert(tx,_data));
-      
+      this.carRepository.insert(tx, _data),
+    )
   }
 
   public async getAll(): Promise<Car[]> {
@@ -36,7 +36,6 @@ export class CarService implements ICarService {
       const cars = await this.carRepository.getAll(tx)
       return cars
     })
-
     return result
   }
 

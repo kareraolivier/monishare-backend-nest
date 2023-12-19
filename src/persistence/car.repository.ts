@@ -48,15 +48,12 @@ export class CarRepository implements ICarRepository {
       'SELECT * FROM cars WHERE id = $(id)',
       { id },
     )
-
     return maybeRow ? rowToDomain(maybeRow) : null
   }
 
   public async get(tx: Transaction, id: CarID): Promise<Car> {
     const car = await this.find(tx, id)
-
     if (!car) throw new CarNotFoundError(id)
-
     return car
   }
 
@@ -74,7 +71,6 @@ export class CarRepository implements ICarRepository {
     throw new Error('Not implemented')
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async update(_tx: Transaction, _car: Car): Promise<Car> {
     const row = await _tx.oneOrNone<Row>(
       `
@@ -97,7 +93,6 @@ export class CarRepository implements ICarRepository {
     return rowToDomain(row)
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async insert(
     _tx: Transaction,
     _car: Except<CarProperties, 'id'>,
@@ -131,6 +126,5 @@ export class CarRepository implements ICarRepository {
     )
 
     return rowToDomain(row)
-
   }
 }
