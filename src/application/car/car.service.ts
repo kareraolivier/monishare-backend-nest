@@ -32,28 +32,29 @@ export class CarService implements ICarService {
   }
 
   //check duplicate lisence plate
-  public async checkForDuplicateLicensePlate(
-    _licensePlate: string,
-  ): Promise<void> {
+  public async checkForDuplicateLicensePlate(_licensePlate: string | null) {
+    if (_licensePlate === null) {
+      throw new BadRequestException('License plate cannot be null')
+    }
     const existingCar = await this.databaseConnection.transactional(tx =>
       this.carRepository.findByLicensePlate(tx, _licensePlate),
     )
     if (existingCar) {
-      throw new DuplicateLicensePlateError('licensePlate exist')
+      throw new DuplicateLicensePlateError(
+        'A car with this license plate already exists',
+      )
     }
   }
 
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
     try {
-      await this.checkForDuplicateLicensePlate(_data.licensePlate as string)
+      await this.checkForDuplicateLicensePlate(_data.licensePlate)
       return await this.databaseConnection.transactional(tx =>
         this.carRepository.insert(tx, _data),
       )
     } catch (error) {
       if (error instanceof DuplicateLicensePlateError) {
-        throw new BadRequestException(
-          'A car with this license plate already exists',
-        )
+        throw new BadRequestException(error)
       }
       throw new InternalServerErrorException(
         'Creating a car is not successfull',
@@ -91,9 +92,7 @@ export class CarService implements ICarService {
           await this.checkForDuplicateLicensePlate(_updates.licensePlate)
         } catch (error) {
           if (error instanceof DuplicateLicensePlateError) {
-            throw new BadRequestException(
-              'A car with this license plate already exists',
-            )
+            throw new BadRequestException(error)
           }
           throw new InternalServerErrorException(
             'Update a car is not successfull',
