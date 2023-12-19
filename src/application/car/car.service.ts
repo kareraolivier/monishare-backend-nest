@@ -23,9 +23,6 @@ export class CarService implements ICarService {
     this.logger = new Logger(CarService.name)
   }
 
-
- // Please remove the next line when implementing this file.
-  /* eslint-disable @typescript-eslint/require-await */
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
     return await this.databaseConnection.transactional(tx =>
       this.carRepository.insert(tx,_data));
@@ -33,11 +30,21 @@ export class CarService implements ICarService {
   }
 
   public async getAll(): Promise<Car[]> {
-    throw new Error('Not implemented')
+    this.logger.verbose('Loading all cars')
+
+    const result = this.databaseConnection.transactional(async tx => {
+      const cars = await this.carRepository.getAll(tx)
+      return cars
+    })
+
+    return result
   }
 
-  public async get(_id: CarID): Promise<Car> {
-    throw new Error('Not implemented')
+  public async get(id: CarID): Promise<Car> {
+    this.logger.verbose(`Loading the car with id ${id}`)
+    return this.databaseConnection.transactional(tx =>
+      this.carRepository.get(tx, id),
+    )
   }
 
   public async update(
