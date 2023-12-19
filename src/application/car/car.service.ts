@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
@@ -54,6 +59,10 @@ export class CarService implements ICarService {
     return this.databaseConnection.transactional(async _tx => {
       const car = await this.carRepository.get(_tx, _carId)
       if (!car) throw new NotFoundException('car does not exist')
+      if (_currentUserId !== car.ownerId)
+        throw new UnauthorizedException(
+          'You are allowed to delete your own car',
+        )
       const updatedCar = new Car({
         ...car,
         ..._updates,
