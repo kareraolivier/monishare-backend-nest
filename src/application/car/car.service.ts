@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
@@ -12,7 +7,7 @@ import { type UserID } from '../user'
 import { Car, type CarID, type CarProperties } from './car'
 import { ICarRepository } from './car.repository.interface'
 import { type ICarService } from './car.service.interface'
-import { DuplicateLicensePlateError } from './error'
+import { DuplicateLicensePlateError, UnAuthorizedError } from './error'
 
 @Injectable()
 export class CarService implements ICarService {
@@ -79,7 +74,7 @@ export class CarService implements ICarService {
       if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
         await this.checkForDuplicateLicensePlate(updates.licensePlate)
       if (currentUserId !== car.ownerId)
-        throw new UnauthorizedException(
+        throw new UnAuthorizedError(
           'You are not allowed to update a car which is not yours',
         )
       const updatedCar = new Car({

@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common'
 import {
@@ -23,8 +24,6 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { DuplicateLicensePlateError } from 'src/application/car/error'
-
 import {
   Car,
   type CarID,
@@ -32,6 +31,10 @@ import {
   type User,
   CarState,
 } from '../../application'
+import {
+  DuplicateLicensePlateError,
+  UnAuthorizedError,
+} from '../../application/car/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -151,6 +154,9 @@ export class CarController {
     } catch (error) {
       if (error instanceof DuplicateLicensePlateError) {
         throw new BadRequestException(error)
+      }
+      if (error instanceof UnAuthorizedError) {
+        throw new UnauthorizedException(error.message)
       }
       throw new InternalServerErrorException(
         'Updating a car is not successfull',
