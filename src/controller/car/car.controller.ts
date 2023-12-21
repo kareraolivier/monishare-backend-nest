@@ -67,7 +67,6 @@ export class CarController {
   @Get()
   public async getAll(): Promise<CarDTO[]> {
     const cars = await this.carService.getAll()
-
     return cars.map(car => CarDTO.fromModel(car))
   }
 
@@ -88,7 +87,6 @@ export class CarController {
   @Get(':id')
   public async get(@Param('id', ParseIntPipe) id: CarID): Promise<CarDTO> {
     const car = await this.carService.get(id)
-
     return CarDTO.fromModel(car)
   }
 
