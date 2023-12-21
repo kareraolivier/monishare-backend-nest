@@ -62,7 +62,7 @@ export class CarRepository implements ICarRepository {
 
     return rows.map(row => rowToDomain(row))
   }
-  
+
   public async findByLicensePlate(
     tx: Transaction,
     licensePlate: string,
