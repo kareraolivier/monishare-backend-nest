@@ -113,9 +113,7 @@ export class CarRepository implements ICarRepository {
         fuel_type,
         horsepower,
         license_plate,
-        info
-
-        
+        info  
       ) VALUES (
         $(carTypeId),
         $(ownerId),
@@ -125,12 +123,9 @@ export class CarRepository implements ICarRepository {
         $(horsepower),
         $(licensePlate),
         $(info)
-
-
       ) RETURNING *`,
       { ..._car },
     )
-
     return rowToDomain(row)
   }
 }

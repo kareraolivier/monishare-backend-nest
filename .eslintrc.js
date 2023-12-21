@@ -29,7 +29,7 @@ module.exports = {
   },
   ignorePatterns: ['.eslintrc.js', '.eslintrc.json'],
   rules: {
-    'prettier/prettier': 'off',
+    // 'prettier/prettier': 'off',
     'unicorn/no-array-callback-reference': 'off',
     'unicorn/no-array-method-this-argument': 'off',
     'unicorn/no-array-reduce': 'off',
