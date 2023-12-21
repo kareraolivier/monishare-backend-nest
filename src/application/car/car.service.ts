@@ -1,17 +1,14 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
+import { AccessDeniedError } from '../access-denied.error'
 import { type UserID } from '../user'
 
 import { Car, type CarID, type CarProperties } from './car'
 import { ICarRepository } from './car.repository.interface'
 import { type ICarService } from './car.service.interface'
-import {
-  DuplicateLicensePlateError,
-  UnAuthorizedError,
-  CarNotFoundError,
-} from './error'
+import { DuplicateLicensePlateError } from './error'
 
 @Injectable()
 export class CarService implements ICarService {
@@ -72,9 +69,8 @@ export class CarService implements ICarService {
   ): Promise<Car> {
     return this.databaseConnection.transactional(async tx => {
       const car = await this.carRepository.get(tx, carId)
-      if (!car) throw new CarNotFoundError(carId)
       if (currentUserId !== car.ownerId)
-        throw new UnAuthorizedError(currentUserId)
+        throw new AccessDeniedError('car', currentUserId)
       if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
         await this.checkForDuplicateLicensePlate(updates.licensePlate)
       const updatedCar = new Car({

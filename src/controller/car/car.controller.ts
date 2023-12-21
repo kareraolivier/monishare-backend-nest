@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -25,6 +24,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
+import { AccessDeniedError } from '../../application'
 import {
   Car,
   type CarID,
@@ -32,11 +32,7 @@ import {
   type User,
   CarState,
 } from '../../application'
-import {
-  DuplicateLicensePlateError,
-  UnAuthorizedError,
-  CarNotFoundError,
-} from '../../application/car/error'
+import { DuplicateLicensePlateError } from '../../application/car/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -154,10 +150,7 @@ export class CarController {
       const car = await this.carService.update(carId, data, user.id)
       return CarDTO.fromModel(car)
     } catch (error) {
-      if (error instanceof CarNotFoundError) {
-        throw new NotFoundException(error.message)
-      }
-      if (error instanceof UnAuthorizedError) {
+      if (error instanceof AccessDeniedError) {
         throw new UnauthorizedException(error.message)
       }
       if (error instanceof DuplicateLicensePlateError) {
