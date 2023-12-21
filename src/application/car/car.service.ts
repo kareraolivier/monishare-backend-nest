@@ -70,7 +70,7 @@ export class CarService implements ICarService {
     return this.databaseConnection.transactional(async tx => {
       const car = await this.carRepository.get(tx, carId)
       if (currentUserId !== car.ownerId)
-        throw new AccessDeniedError('car', carId)
+        throw new AccessDeniedError(Car.name, carId)
       if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
         await this.checkForDuplicateLicensePlate(updates.licensePlate)
       const updatedCar = new Car({
