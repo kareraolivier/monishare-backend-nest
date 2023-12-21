@@ -31,7 +31,7 @@ export class CarService implements ICarService {
   //check duplicate lisence plate
   public async checkForDuplicateLicensePlate(licensePlate: string | null) {
     if (licensePlate === null) {
-      throw new DuplicateLicensePlateError("License plate can't be null")
+      throw new Error("License plate can't be null")
     }
     const existingCar = await this.databaseConnection.transactional(tx =>
       this.carRepository.findByLicensePlate(tx, licensePlate),
@@ -41,10 +41,10 @@ export class CarService implements ICarService {
     }
   }
 
-  public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
-    await this.checkForDuplicateLicensePlate(_data.licensePlate)
+  public async create(data: Except<CarProperties, 'id'>): Promise<Car> {
+    await this.checkForDuplicateLicensePlate(data.licensePlate)
     return await this.databaseConnection.transactional(tx =>
-      this.carRepository.insert(tx, _data),
+      this.carRepository.insert(tx, data),
     )
   }
 

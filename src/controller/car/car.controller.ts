@@ -110,13 +110,13 @@ export class CarController {
   })
   @Post()
   public async create(
-    @CurrentUser() _owner: User,
-    @Body() _data: CreateCarDTO,
+    @CurrentUser() owner: User,
+    @Body() data: CreateCarDTO,
   ): Promise<CarDTO> {
     try {
       const augmentedData = {
-        ..._data,
-        ownerId: _owner.id,
+        ...data,
+        ownerId: owner.id,
         state: CarState.LOCKED,
       }
       const createdCar = await this.carService.create(augmentedData)
@@ -146,12 +146,12 @@ export class CarController {
   })
   @Patch(':id')
   public async patch(
-    @CurrentUser() _user: User,
+    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) carId: CarID,
-    @Body() _data: PatchCarDTO,
+    @Body() data: PatchCarDTO,
   ): Promise<CarDTO> {
     try {
-      const car = await this.carService.update(carId, _data, _user.id)
+      const car = await this.carService.update(carId, data, user.id)
       return CarDTO.fromModel(car)
     } catch (error) {
       if (error instanceof CarNotFoundError) {
