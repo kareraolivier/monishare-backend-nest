@@ -1,7 +1,5 @@
 import {
-  BadRequestException,
   Injectable,
-  InternalServerErrorException,
   Logger,
   NotFoundException,
   UnauthorizedException,
@@ -32,12 +30,12 @@ export class CarService implements ICarService {
   }
 
   //check duplicate lisence plate
-  public async checkForDuplicateLicensePlate(_licensePlate: string | null) {
-    if (_licensePlate === null) {
-      throw new BadRequestException('License plate cannot be null')
+  public async checkForDuplicateLicensePlate(licensePlate: string | null) {
+    if (licensePlate === null) {
+      throw new DuplicateLicensePlateError("License plate can't be null")
     }
     const existingCar = await this.databaseConnection.transactional(tx =>
-      this.carRepository.findByLicensePlate(tx, _licensePlate),
+      this.carRepository.findByLicensePlate(tx, licensePlate),
     )
     if (existingCar) {
       throw new DuplicateLicensePlateError(
@@ -47,19 +45,10 @@ export class CarService implements ICarService {
   }
 
   public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
-    try {
-      await this.checkForDuplicateLicensePlate(_data.licensePlate)
-      return await this.databaseConnection.transactional(tx =>
-        this.carRepository.insert(tx, _data),
-      )
-    } catch (error) {
-      if (error instanceof DuplicateLicensePlateError) {
-        throw new BadRequestException(error)
-      }
-      throw new InternalServerErrorException(
-        'Creating a car is not successfull',
-      )
-    }
+    await this.checkForDuplicateLicensePlate(_data.licensePlate)
+    return await this.databaseConnection.transactional(tx =>
+      this.carRepository.insert(tx, _data),
+    )
   }
 
   public async getAll(): Promise<Car[]> {
@@ -80,35 +69,26 @@ export class CarService implements ICarService {
   }
 
   public async update(
-    _carId: CarID,
-    _updates: Partial<Except<CarProperties, 'id'>>,
-    _currentUserId: UserID,
+    carId: CarID,
+    updates: Partial<Except<CarProperties, 'id'>>,
+    currentUserId: UserID,
   ): Promise<Car> {
-    return this.databaseConnection.transactional(async _tx => {
-      const car = await this.carRepository.get(_tx, _carId)
+    return this.databaseConnection.transactional(async tx => {
+      const car = await this.carRepository.get(tx, carId)
       if (!car) throw new NotFoundException('car does not exist')
-      if (_updates.licensePlate && car.licensePlate !== _updates.licensePlate)
-        try {
-          await this.checkForDuplicateLicensePlate(_updates.licensePlate)
-        } catch (error) {
-          if (error instanceof DuplicateLicensePlateError) {
-            throw new BadRequestException(error)
-          }
-          throw new InternalServerErrorException(
-            'Update a car is not successfull',
-          )
-        }
-      if (_currentUserId !== car.ownerId)
+      if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
+        await this.checkForDuplicateLicensePlate(updates.licensePlate)
+      if (currentUserId !== car.ownerId)
         throw new UnauthorizedException(
-          'You are allowed to delete your own car',
+          'You are not allowed to update a car which is not yours',
         )
       const updatedCar = new Car({
         ...car,
-        ..._updates,
-        id: _carId,
+        ...updates,
+        id: carId,
       })
 
-      return this.carRepository.update(_tx, updatedCar)
+      return this.carRepository.update(tx, updatedCar)
     })
   }
 }

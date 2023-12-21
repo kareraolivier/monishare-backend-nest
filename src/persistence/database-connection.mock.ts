@@ -13,7 +13,7 @@ export function mockDatabaseConnection(
   return {
     transactional: jest
       .fn()
-      .mockImplementation((callback: (_tx: Transaction) => Promise<unknown>) =>
+      .mockImplementation((callback: (tx: Transaction) => Promise<unknown>) =>
         callback(tx as Transaction),
       ),
   }

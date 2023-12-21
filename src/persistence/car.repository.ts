@@ -62,23 +62,21 @@ export class CarRepository implements ICarRepository {
 
     return rows.map(row => rowToDomain(row))
   }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async findByLicensePlate(
-    _tx: Transaction,
-    _licensePlate: string,
+    tx: Transaction,
+    licensePlate: string,
   ): Promise<Car | null> {
-    const rows = await _tx.oneOrNone<Row>(
-      'SELECT * FROM cars WHERE license_plate= $(_licensePlate)',
+    const rows = await tx.oneOrNone<Row>(
+      'SELECT * FROM cars WHERE license_plate= $(licensePlate)',
       {
-        _licensePlate,
+        licensePlate,
       },
     )
     return rows ? rowToDomain(rows) : null
   }
 
-  public async update(_tx: Transaction, _car: Car): Promise<Car> {
-    const row = await _tx.oneOrNone<Row>(
+  public async update(tx: Transaction, car: Car): Promise<Car> {
+    const row = await tx.oneOrNone<Row>(
       `
       UPDATE cars SET
         name = $(name),
@@ -90,20 +88,20 @@ export class CarRepository implements ICarRepository {
       WHERE
         id = $(id)
        RETURNING *`,
-      { ..._car },
+      { ...car },
     )
 
     if (row === null) {
-      throw new CarNotFoundError(_car.id)
+      throw new CarNotFoundError(car.id)
     }
     return rowToDomain(row)
   }
 
   public async insert(
-    _tx: Transaction,
-    _car: Except<CarProperties, 'id'>,
+    tx: Transaction,
+    car: Except<CarProperties, 'id'>,
   ): Promise<Car> {
-    const row = await _tx.one<Row>(
+    const row = await tx.one<Row>(
       `
       INSERT INTO cars (
         car_type_id,
@@ -124,7 +122,7 @@ export class CarRepository implements ICarRepository {
         $(licensePlate),
         $(info)
       ) RETURNING *`,
-      { ..._car },
+      { ...car },
     )
     return rowToDomain(row)
   }

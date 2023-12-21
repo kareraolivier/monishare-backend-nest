@@ -56,7 +56,7 @@ describe('CarController', () => {
         .expect(HttpStatus.NOT_FOUND)
     })
 
-    it('should update a new car  if the user is an administrator', async () => {
+    it('should update a new car', async () => {
       const carId = 42
       const newUpdatedCar = new CarBuilder().withId(carId).build()
       carServiceMock.update.mockResolvedValue(newUpdatedCar)

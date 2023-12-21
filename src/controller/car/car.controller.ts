@@ -1,8 +1,9 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
-  // NotImplementedException,
+  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Patch,
@@ -21,6 +22,8 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
+
+import { DuplicateLicensePlateError } from 'src/application/car/error'
 
 import {
   Car,
@@ -87,7 +90,6 @@ export class CarController {
     return CarDTO.fromModel(car)
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Create a new car.',
   })
@@ -106,16 +108,24 @@ export class CarController {
     @CurrentUser() _owner: User,
     @Body() _data: CreateCarDTO,
   ): Promise<CarDTO> {
-    const augmentedData = {
-      ..._data,
-      ownerId: _owner.id,
-      state: CarState.LOCKED,
+    try {
+      const augmentedData = {
+        ..._data,
+        ownerId: _owner.id,
+        state: CarState.LOCKED,
+      }
+      const createdCar = await this.carService.create(augmentedData)
+      return CarDTO.fromModel(createdCar)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error)
+      }
+      throw new InternalServerErrorException(
+        'Creating a car is not successfull',
+      )
     }
-    const createdCar = await this.carService.create(augmentedData)
-    return createdCar
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   @ApiOperation({
     summary: 'Update an existing car.',
   })
@@ -132,10 +142,19 @@ export class CarController {
   @Patch(':id')
   public async patch(
     @CurrentUser() _user: User,
-    @Param('id', ParseIntPipe) _carId: CarID,
+    @Param('id', ParseIntPipe) carId: CarID,
     @Body() _data: PatchCarDTO,
   ): Promise<CarDTO> {
-    const car = await this.carService.update(_carId, _data, _user.id)
-    return CarDTO.fromModel(car)
+    try {
+      const car = await this.carService.update(carId, _data, _user.id)
+      return CarDTO.fromModel(car)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error)
+      }
+      throw new InternalServerErrorException(
+        'Updating a car is not successfull',
+      )
+    }
   }
 }
