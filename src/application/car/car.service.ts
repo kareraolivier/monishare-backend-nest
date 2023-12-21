@@ -7,7 +7,11 @@ import { type UserID } from '../user'
 import { Car, type CarID, type CarProperties } from './car'
 import { ICarRepository } from './car.repository.interface'
 import { type ICarService } from './car.service.interface'
-import { DuplicateLicensePlateError, UnAuthorizedError } from './error'
+import {
+  DuplicateLicensePlateError,
+  UnAuthorizedError,
+  CarNotFoundError,
+} from './error'
 
 @Injectable()
 export class CarService implements ICarService {
@@ -33,9 +37,7 @@ export class CarService implements ICarService {
       this.carRepository.findByLicensePlate(tx, licensePlate),
     )
     if (existingCar) {
-      throw new DuplicateLicensePlateError(
-        'A car with this license plate already exists',
-      )
+      throw new DuplicateLicensePlateError(licensePlate)
     }
   }
 
@@ -70,11 +72,9 @@ export class CarService implements ICarService {
   ): Promise<Car> {
     return this.databaseConnection.transactional(async tx => {
       const car = await this.carRepository.get(tx, carId)
-      if (!car) throw new NotFoundException('car does not exist')
+      if (!car) throw new CarNotFoundError(carId)
       if (currentUserId !== car.ownerId)
-        throw new UnAuthorizedError(
-          'You are not allowed to update a car which is not yours',
-        )
+        throw new UnAuthorizedError(currentUserId)
       if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
         await this.checkForDuplicateLicensePlate(updates.licensePlate)
       const updatedCar = new Car({
