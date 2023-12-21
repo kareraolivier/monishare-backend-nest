@@ -71,12 +71,12 @@ export class CarService implements ICarService {
     return this.databaseConnection.transactional(async tx => {
       const car = await this.carRepository.get(tx, carId)
       if (!car) throw new NotFoundException('car does not exist')
-      if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
-        await this.checkForDuplicateLicensePlate(updates.licensePlate)
       if (currentUserId !== car.ownerId)
         throw new UnAuthorizedError(
           'You are not allowed to update a car which is not yours',
         )
+      if (updates.licensePlate && car.licensePlate !== updates.licensePlate)
+        await this.checkForDuplicateLicensePlate(updates.licensePlate)
       const updatedCar = new Car({
         ...car,
         ...updates,
