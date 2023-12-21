@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
@@ -24,7 +25,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { AccessDeniedError } from '../../application'
+import { AccessDeniedError, CarNotFoundError } from '../../application'
 import {
   Car,
   type CarID,
@@ -150,6 +151,9 @@ export class CarController {
       const car = await this.carService.update(carId, data, user.id)
       return CarDTO.fromModel(car)
     } catch (error) {
+      if (error instanceof CarNotFoundError) {
+        throw new NotFoundException(error.message)
+      }
       if (error instanceof AccessDeniedError) {
         throw new UnauthorizedException(error.message)
       }
