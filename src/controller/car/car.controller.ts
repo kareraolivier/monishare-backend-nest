@@ -152,11 +152,11 @@ export class CarController {
       const car = await this.carService.update(carId, _data, _user.id)
       return CarDTO.fromModel(car)
     } catch (error) {
+      if (error instanceof UnAuthorizedError) {
+        throw new UnauthorizedException(error)
+      }
       if (error instanceof DuplicateLicensePlateError) {
         throw new BadRequestException(error)
-      }
-      if (error instanceof UnAuthorizedError) {
-        throw new UnauthorizedException(error.message)
       }
       throw new InternalServerErrorException(
         'Updating a car is not successfull',
