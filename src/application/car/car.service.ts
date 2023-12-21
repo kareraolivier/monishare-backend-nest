@@ -55,8 +55,11 @@ export class CarService implements ICarService {
     return result
   }
 
-  public async get(_id: CarID): Promise<Car> {
-    throw new Error('Not implemented')
+  public async get(id: CarID): Promise<Car> {
+    this.logger.verbose(`Loading the car with id ${id}`)
+    return this.databaseConnection.transactional(tx =>
+      this.carRepository.get(tx, id),
+    )
   }
 
   public async update(
