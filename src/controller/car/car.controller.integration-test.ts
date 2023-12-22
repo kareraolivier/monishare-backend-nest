@@ -50,7 +50,7 @@ describe('CarController', () => {
 
   describe('update', () => {
     const carId = 3
-    it('should get 404 not found when route is not right', async () => {
+    it('should get 404 not found when route is not exist', async () => {
       await request(app.getHttpServer())
         .patch(`/car/${carId}`)
         .expect(HttpStatus.NOT_FOUND)

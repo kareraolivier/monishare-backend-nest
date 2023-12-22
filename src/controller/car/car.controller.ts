@@ -3,7 +3,6 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
   Param,
   ParseIntPipe,
   Patch,
@@ -119,7 +118,7 @@ export class CarController {
       if (error instanceof DuplicateLicensePlateError) {
         throw new BadRequestException(error.message)
       }
-      throw new InternalServerErrorException('Creating a car is not successful')
+      throw error
     }
   }
 
