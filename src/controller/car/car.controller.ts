@@ -3,13 +3,10 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Patch,
   Post,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common'
 import {
@@ -25,13 +22,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { AccessDeniedError, CarNotFoundError } from '../../application'
 import {
   Car,
-  type CarID,
-  ICarService,
-  type User,
   CarState,
+  ICarService,
+  type CarID,
+  type User,
 } from '../../application'
 import { DuplicateLicensePlateError } from '../../application/car/error'
 import { AuthenticationGuard } from '../authentication.guard'
@@ -122,9 +118,7 @@ export class CarController {
       if (error instanceof DuplicateLicensePlateError) {
         throw new BadRequestException(error.message)
       }
-      throw new InternalServerErrorException(
-        'Creating a car is not successfull',
-      )
+      throw error
     }
   }
 
