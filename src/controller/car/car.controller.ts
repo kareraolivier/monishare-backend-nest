@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
-  NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -22,7 +22,14 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { Car, type CarID, ICarService, type User } from '../../application'
+import {
+  Car,
+  CarState,
+  ICarService,
+  type CarID,
+  type User,
+} from '../../application'
+import { DuplicateLicensePlateError } from '../../application/car/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -46,15 +53,18 @@ export class CarController {
     this.carService = carService
   }
 
-  // Please remove the next line when implementing this file.
-  /* eslint-disable @typescript-eslint/require-await */
-
   @ApiOperation({
     summary: 'Retrieve all cars.',
   })
+  @ApiOkResponse({
+    description: 'The request was successful',
+    type: [CarDTO],
+  })
   @Get()
   public async getAll(): Promise<CarDTO[]> {
-    throw new NotImplementedException()
+    const cars = await this.carService.getAll()
+
+    return cars.map(car => CarDTO.fromModel(car))
   }
 
   @ApiOperation({
@@ -72,8 +82,10 @@ export class CarController {
     description: 'No car with the given id was found.',
   })
   @Get(':id')
-  public async get(@Param('id', ParseIntPipe) _id: CarID): Promise<CarDTO> {
-    throw new NotImplementedException()
+  public async get(@Param('id', ParseIntPipe) id: CarID): Promise<CarDTO> {
+    const car = await this.carService.get(id)
+
+    return CarDTO.fromModel(car)
   }
 
   @ApiOperation({
@@ -91,10 +103,23 @@ export class CarController {
   })
   @Post()
   public async create(
-    @CurrentUser() _owner: User,
-    @Body() _data: CreateCarDTO,
+    @CurrentUser() owner: User,
+    @Body() data: CreateCarDTO,
   ): Promise<CarDTO> {
-    throw new NotImplementedException()
+    try {
+      const augmentedData = {
+        ...data,
+        ownerId: owner.id,
+        state: CarState.LOCKED,
+      }
+      const createdCar = await this.carService.create(augmentedData)
+      return CarDTO.fromModel(createdCar)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
+    }
   }
 
   @ApiOperation({
@@ -112,10 +137,18 @@ export class CarController {
   })
   @Patch(':id')
   public async patch(
-    @CurrentUser() _user: User,
-    @Param('id', ParseIntPipe) _carId: CarID,
-    @Body() _data: PatchCarDTO,
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) carId: CarID,
+    @Body() data: PatchCarDTO,
   ): Promise<CarDTO> {
-    throw new NotImplementedException()
+    try {
+      const car = await this.carService.update(carId, data, user.id)
+      return CarDTO.fromModel(car)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
+    }
   }
 }
