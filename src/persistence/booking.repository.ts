@@ -34,7 +34,6 @@ function rowToDomain(row: Row): Booking {
 export class BookingRepository {
   public async getAll(tx: Transaction): Promise<Booking[]> {
     const rows = await tx.any<Row>('SELECT * FROM bookings')
-
     return rows.map(row => rowToDomain(row))
   }
 }

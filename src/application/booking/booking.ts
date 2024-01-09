@@ -7,6 +7,7 @@ import {
 } from 'class-validator'
 import { type Opaque } from 'type-fest'
 
+import { validate } from '../../util'
 import { type CarID } from '../car'
 import { UserID } from '../user'
 
@@ -17,8 +18,8 @@ export type BookingID = Opaque<number, 'booking-id'>
 export type BookingProperties = {
   id: BookingID
   carId: CarID
-  state: BookingState
   renterId: UserID
+  state: BookingState
   startDate: string
   endDate: string
 }
@@ -54,5 +55,7 @@ export class Booking {
     this.state = data.state
     this.startDate = data.startDate
     this.endDate = data.endDate
+
+    validate(this)
   }
 }
