@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsEnum,
 } from 'class-validator'
+import { Dayjs } from 'dayjs'
 import { type Opaque } from 'type-fest'
 
 import { validate } from '../../util'
@@ -20,8 +21,8 @@ export type BookingProperties = {
   carId: CarID
   renterId: UserID
   state: BookingState
-  startDate: string
-  endDate: string
+  startDate: Dayjs
+  endDate: Dayjs
 }
 
 export class Booking {
@@ -42,11 +43,11 @@ export class Booking {
 
   @IsString()
   @IsNotEmpty()
-  public readonly startDate: string
+  public readonly startDate: Dayjs
 
   @IsString()
   @IsNotEmpty()
-  public readonly endDate: string
+  public readonly endDate: Dayjs
 
   public constructor(data: BookingProperties) {
     this.id = data.id

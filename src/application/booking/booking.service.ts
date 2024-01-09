@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
+import { Dayjs } from 'dayjs'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
 import { CarID } from '../car'
@@ -38,8 +39,8 @@ export class BookingService implements IBookingService {
       carId: CarID
       state: BookingState
       renterId: UserID
-      startDate: string
-      endDate: string
+      startDate: Dayjs
+      endDate: Dayjs
     }>,
     _currentUserId: UserID,
   ): Promise<Booking> {
@@ -49,8 +50,8 @@ export class BookingService implements IBookingService {
     carId: CarID
     state: BookingState
     renterId: UserID
-    startDate: string
-    endDate: string
+    startDate: Dayjs
+    endDate: Dayjs
   }): Promise<Booking> {
     throw new Error('Method not implemented.')
   }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { Dayjs } from 'dayjs'
 // import { type Except } from 'type-fest'
 
 import {
@@ -16,8 +17,8 @@ type Row = {
   car_id: number
   renter_id: number
   state: string
-  start_date: string
-  end_date: string
+  start_date: Dayjs
+  end_date: Dayjs
 }
 
 function rowToDomain(row: Row): Booking {

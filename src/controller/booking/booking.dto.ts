@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger'
 import { IsEnum, IsInt, IsNotEmpty, IsPositive } from 'class-validator'
+import { Dayjs } from 'dayjs'
 import { type Writable } from 'type-fest'
 
 import {
@@ -47,7 +48,7 @@ export class BookingDTO {
   @ApiProperty({
     description: 'The current state of the booking.',
     enum: BookingState,
-    example: BookingState.PENDING,
+    example: 'PENDING',
   })
   @IsEnum(BookingState)
   public readonly state!: BookingState
@@ -58,7 +59,7 @@ export class BookingDTO {
     nullable: true,
   })
   @IsNotEmpty()
-  public readonly startDate!: string
+  public readonly startDate!: Dayjs
 
   @ApiProperty({
     description: 'The end date of booking.',
@@ -66,15 +67,15 @@ export class BookingDTO {
     nullable: true,
   })
   @IsNotEmpty()
-  public readonly endDate!: string
+  public readonly endDate!: Dayjs
 
   public static create(data: {
     id: BookingID
     carId: CarID
     renterId: UserID
     state: BookingState
-    startDate: string
-    endDate: string
+    startDate: Dayjs
+    endDate: Dayjs
   }): BookingDTO {
     const instance = new BookingDTO() as Writable<BookingDTO>
     instance.id = data.id
