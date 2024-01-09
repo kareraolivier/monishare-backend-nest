@@ -1,0 +1,6 @@
+export enum BookingState {
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+  PICKEDUP = 'PICKED_UP',
+  RETURNED = 'RETURNED',
+}
