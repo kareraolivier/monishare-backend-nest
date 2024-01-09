@@ -82,7 +82,7 @@ export const users = {
       '3253659812d15922fe8c2d300fd7a7ce4466ddcdb6f24f52e83769d1ce32d43d124022e297693ff720c99fda96675f68843b054ac27f2efc7a6fc70096e256d4',
   }),
 }
-
+export const bookings = {}
 export const cars = {
   beatrice: new Car({
     id: 1 as CarID,
