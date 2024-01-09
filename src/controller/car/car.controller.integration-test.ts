@@ -50,13 +50,13 @@ describe('CarController', () => {
 
   describe('update', () => {
     const carId = 3
-    it('should get 404 not found when route is not right', async () => {
+    it('should get 404 not found when route is not exist', async () => {
       await request(app.getHttpServer())
         .patch(`/car/${carId}`)
         .expect(HttpStatus.NOT_FOUND)
     })
 
-    it('should update a new car  if the user is an administrator', async () => {
+    it('should update a new car', async () => {
       const carId = 42
       const newUpdatedCar = new CarBuilder().withId(carId).build()
       carServiceMock.update.mockResolvedValue(newUpdatedCar)

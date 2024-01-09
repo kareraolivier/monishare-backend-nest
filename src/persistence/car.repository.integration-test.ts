@@ -1,21 +1,14 @@
-//After using all imports delete the following two lines
-/* eslint-disable import/order */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { setupIntegrationTest, cars } from '../../jest.integration-test-setup'
 import {
   CarNotFoundError,
-  Car,
   type CarID,
-  type CarProperties,
   CarState,
   type CarTypeID,
   FuelType,
-  type ICarRepository,
   type UserID,
 } from '../application'
+
 import { CarRepository } from './car.repository'
-import { type Transaction } from './database-connection.interface'
 
 describe('CarRepository', () => {
   const { execute } = setupIntegrationTest()
@@ -35,7 +28,7 @@ describe('CarRepository', () => {
         licensePlate: 'RA-12',
         info: 'no smoking',
       }
-      const actual = await execute(_tx => carRepository.update(_tx, updated))
+      const actual = await execute(tx => carRepository.update(tx, updated))
 
       expect(actual).toEqual(updated)
     })
@@ -53,7 +46,7 @@ describe('CarRepository', () => {
         info: 'no smoking',
       }
       await expect(
-        execute(_tx => carRepository.update(_tx, updated)),
+        execute(tx => carRepository.update(tx, updated)),
       ).rejects.toThrow(CarNotFoundError)
     })
   })

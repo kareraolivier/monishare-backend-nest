@@ -1,8 +1,8 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
-  // NotImplementedException,
   Param,
   ParseIntPipe,
   Patch,
@@ -24,11 +24,12 @@ import {
 
 import {
   Car,
-  type CarID,
-  ICarService,
-  type User,
   CarState,
+  ICarService,
+  type CarID,
+  type User,
 } from '../../application'
+import { DuplicateLicensePlateError } from '../../application/car/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -103,16 +104,23 @@ export class CarController {
   })
   @Post()
   public async create(
-    @CurrentUser() _owner: User,
-    @Body() _data: CreateCarDTO,
+    @CurrentUser() owner: User,
+    @Body() data: CreateCarDTO,
   ): Promise<CarDTO> {
-    const augmentedData = {
-      ..._data,
-      ownerId: _owner.id,
-      state: CarState.LOCKED,
+    try {
+      const augmentedData = {
+        ...data,
+        ownerId: owner.id,
+        state: CarState.LOCKED,
+      }
+      const createdCar = await this.carService.create(augmentedData)
+      return CarDTO.fromModel(createdCar)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
     }
-    const createdCar = await this.carService.create(augmentedData)
-    return createdCar
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -131,11 +139,18 @@ export class CarController {
   })
   @Patch(':id')
   public async patch(
-    @CurrentUser() _user: User,
-    @Param('id', ParseIntPipe) _carId: CarID,
-    @Body() _data: PatchCarDTO,
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) carId: CarID,
+    @Body() data: PatchCarDTO,
   ): Promise<CarDTO> {
-    const car = await this.carService.update(_carId, _data, _user.id)
-    return CarDTO.fromModel(car)
+    try {
+      const car = await this.carService.update(carId, data, user.id)
+      return CarDTO.fromModel(car)
+    } catch (error) {
+      if (error instanceof DuplicateLicensePlateError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
+    }
   }
 }

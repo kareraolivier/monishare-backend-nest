@@ -1,14 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
+import { AccessDeniedError } from '../access-denied.error'
 import { type UserID } from '../user'
 
 import { Car, type CarID, type CarProperties } from './car'
@@ -31,40 +25,24 @@ export class CarService implements ICarService {
     this.logger = new Logger(CarService.name)
   }
 
-  //check duplicate lisence plate
-  public async checkForDuplicateLicensePlate(_licensePlate: string | null) {
-    if (_licensePlate === null) {
-      throw new BadRequestException('License plate cannot be null')
-    }
+  private async checkForDuplicateLicensePlate(licensePlate: string) {
     const existingCar = await this.databaseConnection.transactional(tx =>
-      this.carRepository.findByLicensePlate(tx, _licensePlate),
+      this.carRepository.findByLicensePlate(tx, licensePlate),
     )
     if (existingCar) {
-      throw new DuplicateLicensePlateError(
-        'A car with this license plate already exists',
-      )
+      throw new DuplicateLicensePlateError(licensePlate)
     }
   }
 
-  public async create(_data: Except<CarProperties, 'id'>): Promise<Car> {
-    try {
-      await this.checkForDuplicateLicensePlate(_data.licensePlate)
-      return await this.databaseConnection.transactional(tx =>
-        this.carRepository.insert(tx, _data),
-      )
-    } catch (error) {
-      if (error instanceof DuplicateLicensePlateError) {
-        throw new BadRequestException(error)
-      }
-      throw new InternalServerErrorException(
-        'Creating a car is not successfull',
-      )
-    }
+  public async create(data: Except<CarProperties, 'id'>): Promise<Car> {
+    return await this.databaseConnection.transactional(async tx => {
+      if (data.licensePlate)
+        await this.checkForDuplicateLicensePlate(data.licensePlate)
+      return this.carRepository.insert(tx, data)
+    })
   }
 
   public async getAll(): Promise<Car[]> {
-    this.logger.verbose('Loading all cars')
-
     const result = this.databaseConnection.transactional(async tx => {
       const cars = await this.carRepository.getAll(tx)
       return cars
@@ -73,42 +51,32 @@ export class CarService implements ICarService {
   }
 
   public async get(id: CarID): Promise<Car> {
-    this.logger.verbose(`Loading the car with id ${id}`)
     return this.databaseConnection.transactional(tx =>
       this.carRepository.get(tx, id),
     )
   }
 
   public async update(
-    _carId: CarID,
-    _updates: Partial<Except<CarProperties, 'id'>>,
-    _currentUserId: UserID,
+    carId: CarID,
+    updates: Partial<Except<CarProperties, 'id'>>,
+    currentUserId: UserID,
   ): Promise<Car> {
-    return this.databaseConnection.transactional(async _tx => {
-      const car = await this.carRepository.get(_tx, _carId)
-      if (!car) throw new NotFoundException('car does not exist')
-      if (_updates.licensePlate && car.licensePlate !== _updates.licensePlate)
-        try {
-          await this.checkForDuplicateLicensePlate(_updates.licensePlate)
-        } catch (error) {
-          if (error instanceof DuplicateLicensePlateError) {
-            throw new BadRequestException(error)
-          }
-          throw new InternalServerErrorException(
-            'Update a car is not successfull',
-          )
-        }
-      if (_currentUserId !== car.ownerId)
-        throw new UnauthorizedException(
-          'You are allowed to delete your own car',
-        )
+    return this.databaseConnection.transactional(async tx => {
+      const car = await this.carRepository.get(tx, carId)
+      if (currentUserId !== car.ownerId)
+        throw new AccessDeniedError(Car.name, carId)
+      if (
+        typeof updates.licensePlate === 'string' &&
+        car.licensePlate !== updates.licensePlate
+      )
+        await this.checkForDuplicateLicensePlate(updates.licensePlate)
       const updatedCar = new Car({
         ...car,
-        ..._updates,
-        id: _carId,
+        ...updates,
+        id: carId,
       })
 
-      return this.carRepository.update(_tx, updatedCar)
+      return this.carRepository.update(tx, updatedCar)
     })
   }
 }
