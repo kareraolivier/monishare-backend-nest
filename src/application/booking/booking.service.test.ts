@@ -1,3 +1,4 @@
+import { bookings } from '../../../jest.integration-test-setup'
 import {
   type BookingRepositoryMock,
   type DatabaseConnectionMock,
@@ -6,6 +7,7 @@ import {
 } from '../../mocks'
 import { UserBuilder } from '../user/user.builder'
 
+import { type BookingID } from './booking'
 import { BookingState } from './booking-state'
 import { BookingBuilder } from './booking.builder'
 import { BookingService } from './booking.service'
@@ -25,12 +27,24 @@ describe('BookingService', () => {
     )
   })
 
-  // describe('Get All bookings',() =>{
-  //   it('it should get all bookings', async () => {
-  //     const user = new UserBuilder().build()
+  describe('Get All bookings', () => {
+    it('it should get all bookings', async () => {
+      const booking = new BookingBuilder().build()
+      bookingRepositoryMock.getAll.mockResolvedValue([booking])
+      const actual = await bookingService.getAll()
+      expect(actual).toIncludeSameMembers(Object.values(bookings))
+    })
+  })
 
-  //   })
-  // })
+  describe('Get single booking', () => {
+    it('it should get dingle booking', async () => {
+      const bookingId = 1 as BookingID
+      const booking = new BookingBuilder().build()
+      bookingRepositoryMock.get.mockResolvedValue(booking)
+      const actual = await bookingService.get(bookingId)
+      expect(actual).toEqual(bookings.beatrice)
+    })
+  })
 
   describe('update', () => {
     xit('should update a booking', async () => {
