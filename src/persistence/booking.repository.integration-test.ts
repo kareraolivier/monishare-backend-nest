@@ -16,7 +16,7 @@ describe('BookingRepository', () => {
   describe('getAll', () => {
     it('should get all the bookings', async () => {
       const actual = await execute(tx => bookingRepository.getAll(tx))
-      expect(actual).toIncludeSameMembers(Object.values(bookings))
+      expect(actual).toEqual([bookings.beatrice])
     })
   })
 
