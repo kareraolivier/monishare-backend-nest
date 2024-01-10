@@ -4,11 +4,11 @@ import { Dayjs } from 'dayjs'
 
 import {
   Booking,
-  BookingID,
-  BookingState,
-  CarID,
-  UserID,
-} from 'src/application'
+  type BookingID,
+  type BookingState,
+  type CarID,
+  type UserID,
+} from '../application'
 
 import { type Transaction } from './database-connection.interface'
 

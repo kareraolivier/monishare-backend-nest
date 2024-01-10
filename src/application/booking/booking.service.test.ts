@@ -25,6 +25,13 @@ describe('BookingService', () => {
     )
   })
 
+  // describe('Get All bookings',() =>{
+  //   it('it should get all bookings', async () => {
+  //     const user = new UserBuilder().build()
+
+  //   })
+  // })
+
   describe('update', () => {
     xit('should update a booking', async () => {
       const renter = new UserBuilder().build()
