@@ -12,7 +12,7 @@ import {
   ApiOperation,
 } from '@nestjs/swagger'
 
-import { BookingID, IBookingService } from 'src/application'
+import { type BookingID, IBookingService } from '../../application'
 
 import { BookingDTO } from './booking.dto'
 

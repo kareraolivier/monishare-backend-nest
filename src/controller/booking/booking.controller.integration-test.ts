@@ -1,13 +1,20 @@
 import { HttpStatus, INestApplication } from '@nestjs/common'
 import { Test } from '@nestjs/testing'
+import dayjs from 'dayjs'
 import request from 'supertest'
 
-import { IBookingService } from '../../application'
-import { UserBuilder } from '../../builders'
+import {
+  BookingID,
+  BookingState,
+  CarID,
+  IBookingService,
+  UserID,
+} from '../../application'
+import { UserBuilder, BookingBuilder } from '../../builders'
 import {
   AuthenticationGuardMock,
-  type BookingServiceMock,
   mockBookingService,
+  type BookingServiceMock,
 } from '../../mocks'
 import { configureGlobalEnhancers } from '../../setup-app'
 import { AuthenticationGuard } from '../authentication.guard'
@@ -18,6 +25,24 @@ describe('bookingController', () => {
   const user = UserBuilder.from({
     id: 42,
     name: 'peter',
+  }).build()
+
+  const bookingOne = BookingBuilder.from({
+    id: 2 as BookingID,
+    carId: 1 as CarID,
+    renterId: 42 as UserID,
+    state: BookingState.PENDING,
+    startDate: dayjs('2024-01-08T14:07:27.828Z'),
+    endDate: dayjs('2024-01-09T07:20:56.959Z'),
+  }).build()
+
+  const bookingTwo = BookingBuilder.from({
+    id: 1 as BookingID,
+    carId: 1 as CarID,
+    renterId: 42 as UserID,
+    state: BookingState.PENDING,
+    startDate: dayjs('2024-02-08T14:07:27.828Z'),
+    endDate: dayjs('2024-02-09T07:20:56.959Z'),
   }).build()
 
   let app: INestApplication
@@ -45,9 +70,66 @@ describe('bookingController', () => {
     await configureGlobalEnhancers(app).init()
   })
 
-  it('should get 404 not found when route is not exist', async () => {
+  afterEach(() => app.close())
+
+  describe('getAll', () => {
+    it('should return all existing bookings', async () => {
+      bookingServiceMock.getAll.mockResolvedValue([bookingOne, bookingTwo])
+
+      await request(app.getHttpServer())
+        .get('/bookings')
+        .expect(HttpStatus.OK)
+        .expect([
+          {
+            id: 2,
+            carId: 1,
+            renterId: 42,
+            state: 'PENDING',
+            startDate: '2024-01-08T14:07:27.828Z',
+            endDate: '2024-01-09T07:20:56.959Z',
+          },
+          {
+            id: 1,
+            carId: 1,
+            renterId: 42,
+            state: 'PENDING',
+            startDate: '2024-02-08T14:07:27.828Z',
+            endDate: '2024-02-09T07:20:56.959Z',
+          },
+        ])
+    })
+  })
+
+  describe('get', () => {
+    it('should return single booking', async () => {
+      const bookingId = 1
+      bookingServiceMock.get.mockResolvedValue(bookingTwo)
+
+      await request(app.getHttpServer())
+        .get(`/bookings/${bookingId}`)
+        .expect(HttpStatus.OK)
+        .expect({
+          id: 1,
+          carId: 1,
+          renterId: 42,
+          state: 'PENDING',
+          startDate: '2024-02-08T14:07:27.828Z',
+          endDate: '2024-02-09T07:20:56.959Z',
+        })
+    })
+    it('should return bad request if id is undefined', async () => {
+      const bookingId = undefined
+      bookingServiceMock.get.mockResolvedValue(bookingTwo)
+
+      await request(app.getHttpServer())
+        .get(`/bookings/${bookingId}`)
+        .expect(HttpStatus.BAD_REQUEST)
+    })
+  })
+
+  it('should get 404 not found when route does not exist', async () => {
     await request(app.getHttpServer())
-      .patch(`/bookings`)
+      .get(`/booking`)
       .expect(HttpStatus.NOT_FOUND)
   })
 })

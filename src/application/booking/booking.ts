@@ -41,11 +41,9 @@ export class Booking {
   @IsEnum(BookingState)
   public readonly state: BookingState
 
-  @IsString()
   @IsNotEmpty()
   public readonly startDate: Dayjs
 
-  @IsString()
   @IsNotEmpty()
   public readonly endDate: Dayjs
 

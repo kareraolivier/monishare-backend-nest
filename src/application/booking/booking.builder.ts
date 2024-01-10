@@ -1,4 +1,4 @@
-import { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { type Except } from 'type-fest'
 
 import { Car, type CarID } from '../car'
@@ -27,12 +27,12 @@ type UntaggedBookingProperties = Except<
 
 export class BookingBuilder {
   private readonly properties: UntaggedBookingProperties = {
-    id: 42 as BookingID,
-    carId: 13 as CarID,
-    renterId: 7 as UserID,
+    id: 1 as BookingID,
+    carId: 1 as CarID,
+    renterId: 1 as UserID,
     state: BookingState.PENDING,
-    startDate: new Dayjs(),
-    endDate: new Dayjs(),
+    startDate: '2024-02-08T14:07:27.828Z' as unknown as Dayjs,
+    endDate: '2024-02-09T14:07:28.828Z' as unknown as Dayjs,
   }
 
   public static from(

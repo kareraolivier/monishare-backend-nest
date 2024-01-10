@@ -9,8 +9,7 @@ import {
   BookingState,
   type CarID,
   type UserID,
-} from 'src/application'
-
+} from '../../application'
 import { validate } from '../../util'
 
 export class BookingDTO {
