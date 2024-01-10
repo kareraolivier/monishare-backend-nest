@@ -19,13 +19,23 @@ import {
   FuelType,
   User,
   type UserID,
+  type BookingID,
+  BookingState,
+  Booking,
 } from './src/application'
 import { DatabaseConnectionConfig, type Transaction } from './src/persistence'
+import dayjs, { Dayjs } from 'dayjs'
 
 const execFile = promisify(execFileCallback)
 
 const IMAGE_NAME = 'postgres:15-alpine'
-const PG_MIGRATE = join(__dirname, 'node_modules', '.bin', 'node-pg-migrate')
+const PG_MIGRATE = join(
+  __dirname,
+  'node_modules',
+  'node-pg-migrate',
+  'bin',
+  'node-pg-migrate',
+)
 const LOCAL_FIXTURE_DIR = join(__dirname, 'fixture')
 const CONTAINER_FIXTURE_DIR = '/fixture'
 const JEST_WORKER_ID = process.env.JEST_WORKER_ID ?? ''
@@ -82,7 +92,16 @@ export const users = {
       '3253659812d15922fe8c2d300fd7a7ce4466ddcdb6f24f52e83769d1ce32d43d124022e297693ff720c99fda96675f68843b054ac27f2efc7a6fc70096e256d4',
   }),
 }
-
+export const bookings = {
+  beatrice: new Booking({
+    id: 1 as BookingID,
+    carId: 1 as CarID,
+    renterId: 1 as UserID,
+    state: BookingState.PENDING,
+    startDate: '2024-02-08T14:07:27.828Z' as unknown as Dayjs,
+    endDate: '2024-02-09T14:07:28.828Z' as unknown as Dayjs,
+  }),
+}
 export const cars = {
   beatrice: new Car({
     id: 1 as CarID,
