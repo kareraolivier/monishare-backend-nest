@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 
 import {
   AuthenticationService,
+  BookingService,
   CarService,
   CarTypeService,
   IAuthenticationService,
@@ -9,6 +10,7 @@ import {
   ICarTypeService,
   IUserService,
   UserService,
+  IBookingService,
 } from '../application'
 
 import { DatabaseModule } from './database.module'
@@ -33,7 +35,17 @@ import { RepositoryModule } from './repository.module'
       provide: IUserService,
       useClass: UserService,
     },
+    {
+      provide: IBookingService,
+      useClass: BookingService,
+    },
   ],
-  exports: [IAuthenticationService, ICarService, ICarTypeService, IUserService],
+  exports: [
+    IAuthenticationService,
+    ICarService,
+    ICarTypeService,
+    IUserService,
+    IBookingService,
+  ],
 })
 export class ServiceModule {}
