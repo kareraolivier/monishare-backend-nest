@@ -37,4 +37,11 @@ export class BookingRepository {
     const rows = await tx.any<Row>('SELECT * FROM bookings')
     return rows.map(row => rowToDomain(row))
   }
+  public async get(tx: Transaction, id: BookingID): Promise<Booking | null> {
+    const maybeRow = await tx.oneOrNone<Row>(
+      'SELECT * FROM bookings WHERE id = $(id)',
+      { id },
+    )
+    return maybeRow ? rowToDomain(maybeRow) : null
+  }
 }

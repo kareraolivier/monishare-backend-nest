@@ -31,6 +31,11 @@ export class BookingService implements IBookingService {
     })
     return result
   }
+  public async get(id: BookingID): Promise<Booking> {
+    return this.databaseConnection.transactional(tx =>
+      this.bookingRepository.get(tx, id),
+    )
+  }
 
   /* eslint-disable @typescript-eslint/require-await */
   public update(
@@ -53,9 +58,6 @@ export class BookingService implements IBookingService {
     startDate: Dayjs
     endDate: Dayjs
   }): Promise<Booking> {
-    throw new Error('Method not implemented.')
-  }
-  public get(_id: BookingID): Promise<Booking> {
     throw new Error('Method not implemented.')
   }
 }
