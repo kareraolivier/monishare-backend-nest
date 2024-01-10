@@ -1,4 +1,4 @@
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 import { type Except } from 'type-fest'
 
 import { Car, type CarID } from '../car'
