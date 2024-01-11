@@ -1,4 +1,4 @@
-import { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { type Except } from 'type-fest'
 
 import { Car, type CarID } from '../car'
@@ -31,8 +31,8 @@ export class BookingBuilder {
     carId: 1 as CarID,
     renterId: 1 as UserID,
     state: BookingState.PENDING,
-    startDate: '2024-02-08T14:07:27.828Z' as unknown as Dayjs,
-    endDate: '2024-02-09T14:07:28.828Z' as unknown as Dayjs,
+    startDate: dayjs('2024-02-08T14:07:27.828Z'),
+    endDate: dayjs('2024-02-09T14:07:28.828Z'),
   }
 
   public static from(

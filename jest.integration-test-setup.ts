@@ -7,24 +7,24 @@ import {
   PostgreSqlContainer,
   type StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql'
+import dayjs from 'dayjs'
 import * as glob from 'glob'
 import pgPromise, { IDatabase } from 'pg-promise'
 
 import {
+  Booking,
+  BookingState,
   Car,
-  type CarID,
   CarState,
   CarType,
-  type CarTypeID,
   FuelType,
   User,
-  type UserID,
   type BookingID,
-  BookingState,
-  Booking,
+  type CarID,
+  type CarTypeID,
+  type UserID,
 } from './src/application'
 import { DatabaseConnectionConfig, type Transaction } from './src/persistence'
-import dayjs, { Dayjs } from 'dayjs'
 
 const execFile = promisify(execFileCallback)
 
@@ -92,16 +92,7 @@ export const users = {
       '3253659812d15922fe8c2d300fd7a7ce4466ddcdb6f24f52e83769d1ce32d43d124022e297693ff720c99fda96675f68843b054ac27f2efc7a6fc70096e256d4',
   }),
 }
-export const bookings = {
-  beatrice: new Booking({
-    id: 1 as BookingID,
-    carId: 1 as CarID,
-    renterId: 1 as UserID,
-    state: BookingState.PENDING,
-    startDate: '2024-02-08T14:07:27.828Z' as unknown as Dayjs,
-    endDate: '2024-02-09T14:07:28.828Z' as unknown as Dayjs,
-  }),
-}
+
 export const cars = {
   beatrice: new Car({
     id: 1 as CarID,
@@ -124,6 +115,17 @@ export const cars = {
     horsepower: 125,
     licensePlate: 'FOO-BAR 42',
     info: 'Please no scratches!',
+  }),
+}
+
+export const bookings = {
+  beatrice: new Booking({
+    id: 1 as BookingID,
+    carId: cars.beatrice.id,
+    renterId: users.beatrice.id,
+    state: BookingState.PENDING,
+    startDate: dayjs('2024-02-08T14:07:27.828Z'),
+    endDate: dayjs('2024-02-09T14:07:28.828Z'),
   }),
 }
 

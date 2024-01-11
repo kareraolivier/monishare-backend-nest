@@ -25,15 +25,13 @@ export class BookingService implements IBookingService {
     this.logger = new Logger(BookingService.name)
   }
   public async getAll(): Promise<Booking[]> {
-    const result = this.databaseConnection.transactional(async tx => {
-      const bookings = await this.bookingRepository.getAll(tx)
-      return bookings
-    })
-    return result
+    return this.databaseConnection.transactional(
+      async tx => await this.bookingRepository.getAll(tx),
+    )
   }
   public async get(id: BookingID): Promise<Booking> {
-    return this.databaseConnection.transactional(tx =>
-      this.bookingRepository.get(tx, id),
+    return this.databaseConnection.transactional(
+      async tx => await this.bookingRepository.get(tx, id),
     )
   }
 

@@ -83,12 +83,10 @@ export function up(pgm: MigrationBuilder): void {
       type: 'text',
     },
     start_date: {
-      type: 'text',
-      notNull: true,
+      type: 'timestamptz',
     },
     end_date: {
-      type: 'text',
-      notNull: true,
+      type: 'timestamptz',
     },
   })
 }
