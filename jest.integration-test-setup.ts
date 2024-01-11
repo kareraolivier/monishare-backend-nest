@@ -122,7 +122,7 @@ export const bookings = {
   beatrice: new Booking({
     id: 1 as BookingID,
     carId: cars.beatrice.id,
-    renterId: users.beatrice.id,
+    renterId: users.izzedin.id,
     state: BookingState.PENDING,
     startDate: dayjs('2024-02-08T14:07:27.828Z'),
     endDate: dayjs('2024-02-09T14:07:28.828Z'),
