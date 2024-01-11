@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common'
 import { Dayjs } from 'dayjs'
-// import { type Except } from 'type-fest'
 
 import {
   Booking,
@@ -9,6 +8,7 @@ import {
   type CarID,
   type UserID,
 } from '../application'
+import { BookingNotFoundError } from '../application/booking/booking-not-found.error'
 
 import { type Transaction } from './database-connection.interface'
 
@@ -33,15 +33,22 @@ function rowToDomain(row: Row): Booking {
 }
 @Injectable()
 export class BookingRepository {
-  public async getAll(tx: Transaction): Promise<Booking[]> {
-    const rows = await tx.any<Row>('SELECT * FROM bookings')
-    return rows.map(row => rowToDomain(row))
-  }
-  public async get(tx: Transaction, id: BookingID): Promise<Booking | null> {
+  public async find(tx: Transaction, id: BookingID): Promise<Booking | null> {
     const maybeRow = await tx.oneOrNone<Row>(
       'SELECT * FROM bookings WHERE id = $(id)',
       { id },
     )
     return maybeRow ? rowToDomain(maybeRow) : null
+  }
+
+  public async getAll(tx: Transaction): Promise<Booking[]> {
+    const rows = await tx.any<Row>('SELECT * FROM bookings')
+    return rows.map(row => rowToDomain(row))
+  }
+
+  public async get(tx: Transaction, id: BookingID): Promise<Booking> {
+    const booking = await this.find(tx, id)
+    if (!booking) throw new BookingNotFoundError(id)
+    return booking
   }
 }

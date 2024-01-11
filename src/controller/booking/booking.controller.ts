@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Get,
-  NotFoundException,
-  Param,
-  ParseIntPipe,
-} from '@nestjs/common'
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
@@ -56,8 +50,6 @@ export class BookingController {
     @Param('id', ParseIntPipe) id: BookingID,
   ): Promise<BookingDTO> {
     const booking = await this.bookingService.get(id)
-    if (!booking)
-      throw new NotFoundException(`No booking with id ${id} was found.`)
     return BookingDTO.fromModel(booking)
   }
 }

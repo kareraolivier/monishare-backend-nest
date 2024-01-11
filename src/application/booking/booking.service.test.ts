@@ -37,7 +37,7 @@ describe('BookingService', () => {
   })
 
   describe('Get single booking', () => {
-    it('it should get dingle booking', async () => {
+    it('it should get single booking', async () => {
       const bookingId = 1 as BookingID
       const booking = new BookingBuilder().build()
       bookingRepositoryMock.get.mockResolvedValue(booking)

@@ -16,7 +16,18 @@ describe('BookingRepository', () => {
   describe('getAll', () => {
     it('should get all the bookings', async () => {
       const actual = await execute(tx => bookingRepository.getAll(tx))
-      expect(actual).toEqual([bookings.beatrice])
+      const expected = actual.map(booking => ({
+        ...booking,
+        startDate: booking.startDate.toISOString(),
+        endDate: booking.endDate.toISOString(),
+      }))
+      expect(expected).toEqual([
+        {
+          ...bookings.beatrice,
+          startDate: bookings.beatrice.startDate.toISOString(),
+          endDate: bookings.beatrice.endDate.toISOString(),
+        },
+      ])
     })
   })
 
@@ -25,7 +36,17 @@ describe('BookingRepository', () => {
       const actual = await execute(tx =>
         bookingRepository.get(tx, bookings.beatrice.id),
       )
-      expect(actual).toEqual(bookings.beatrice)
+
+      const expected = {
+        ...actual,
+        startDate: actual.startDate.toISOString(),
+        endDate: actual.endDate.toISOString(),
+      }
+      expect(expected).toEqual({
+        ...bookings.beatrice,
+        startDate: bookings.beatrice.startDate.toISOString(),
+        endDate: bookings.beatrice.endDate.toISOString(),
+      })
     })
   })
 })
