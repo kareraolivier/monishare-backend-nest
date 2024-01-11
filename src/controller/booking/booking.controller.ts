@@ -1,15 +1,29 @@
-import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common'
+import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiInternalServerErrorResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiTags,
+  ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { type BookingID, IBookingService } from '../../application'
+import { type BookingID, IBookingService, Booking } from '../../application'
+import { AuthenticationGuard } from '../authentication.guard'
 
 import { BookingDTO } from './booking.dto'
-
+@ApiTags(Booking.name)
+@ApiBearerAuth()
+@ApiUnauthorizedResponse({
+  description:
+    'The request was not authorized because the JWT was missing, expired or otherwise invalid.',
+})
+@ApiInternalServerErrorResponse({
+  description: 'An internal server error occurred.',
+})
+@UseGuards(AuthenticationGuard)
 @Controller('bookings')
 export class BookingController {
   private readonly bookingService: IBookingService
