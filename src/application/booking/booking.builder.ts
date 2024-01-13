@@ -15,14 +15,14 @@ import { BookingState } from './booking-state'
 
 type UntaggedBookingProperties = Except<
   BookingProperties,
-  'id' | 'carId' | 'renterId' | 'state' | 'startDate' | 'endDate'
+  'id' | 'carId' | 'renterId'
 > & {
   id: number
   carId: number
   renterId: number
-  state: BookingState
-  startDate: Dayjs
-  endDate: Dayjs
+  // state: BookingState
+  // startDate: Dayjs
+  // endDate: Dayjs
 }
 
 export class BookingBuilder {

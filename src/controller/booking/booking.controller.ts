@@ -1,4 +1,12 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Post,
+  Param,
+  ParseIntPipe,
+  UseGuards,
+  Body,
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -6,14 +14,24 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiCreatedResponse,
+  ApiConflictResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { type BookingID, IBookingService, Booking } from '../../application'
+import {
+  type BookingID,
+  IBookingService,
+  Booking,
+  type User,
+  BookingState,
+} from '../../application'
 import { AuthenticationGuard } from '../authentication.guard'
+import { CurrentUser } from '../current-user.decorator'
 
-import { BookingDTO } from './booking.dto'
+import { BookingDTO, CreateBookingDTO } from './booking.dto'
+
 @ApiTags(Booking.name)
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -65,5 +83,35 @@ export class BookingController {
   ): Promise<BookingDTO> {
     const booking = await this.bookingService.get(id)
     return BookingDTO.fromModel(booking)
+  }
+
+  @ApiOperation({
+    summary: 'Create a new booking.',
+  })
+  @ApiCreatedResponse({
+    description: 'A new booking was created.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The request was malformed',
+  })
+  @ApiConflictResponse({
+    description: 'A booking is not successfull.',
+  })
+  @Post()
+  public async create(
+    @CurrentUser() renter: User,
+    @Body() data: CreateBookingDTO,
+  ): Promise<BookingDTO> {
+    try {
+      const bookingData = {
+        ...data,
+        state: BookingState.PICKEDUP,
+        renterId: renter.id,
+      }
+      const createdBooking = await this.bookingService.create(bookingData)
+      return BookingDTO.fromModel(createdBooking)
+    } catch (error) {
+      throw error
+    }
   }
 }

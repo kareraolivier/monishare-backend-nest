@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { Dayjs } from 'dayjs'
+import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
 import { CarID } from '../car'
 import { UserID } from '../user'
 
-import { Booking, BookingID } from './booking'
+import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
@@ -36,6 +37,11 @@ export class BookingService implements IBookingService {
   }
 
   /* eslint-disable @typescript-eslint/require-await */
+  public async create(data: Except<BookingProperties, 'id'>): Promise<Booking> {
+    return await this.databaseConnection.transactional(async tx =>
+      this.bookingRepository.insert(tx, data),
+    )
+  }
   public update(
     _carId: BookingID,
     _updates: Partial<{
@@ -47,15 +53,6 @@ export class BookingService implements IBookingService {
     }>,
     _currentUserId: UserID,
   ): Promise<Booking> {
-    throw new Error('Method not implemented.')
-  }
-  public create(_properties: {
-    carId: CarID
-    state: BookingState
-    renterId: UserID
-    startDate: Dayjs
-    endDate: Dayjs
-  }): Promise<Booking> {
     throw new Error('Method not implemented.')
   }
 }
