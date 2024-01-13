@@ -27,10 +27,23 @@ export class BookingService implements IBookingService {
     this.logger = new Logger(BookingService.name)
   }
 
-  private async gettingBookingsWithSameCarIds(carId: CarID) {
-    return await this.databaseConnection.transactional(
-      async tx => await this.bookingRepository.findByCarId(tx, carId),
-    )
+  private async getOverlapBookings(
+    carId: CarID,
+    startDate: Dayjs,
+    endDate: Dayjs,
+  ) {
+    return await this.databaseConnection.transactional(async tx => {
+      const start = dayjs(startDate)
+      const end = dayjs(endDate)
+      const allBookings = await this.bookingRepository.findByCarId(tx, carId)
+
+      //checking booking overlap and throw an error
+      const hasOverlap = allBookings?.some(
+        booking =>
+          start.isBefore(booking.endDate) && end.isAfter(booking.startDate),
+      )
+      if (hasOverlap) throw new BookingOverlapError(carId)
+    })
   }
 
   public async getAll(): Promise<Booking[]> {
@@ -46,21 +59,7 @@ export class BookingService implements IBookingService {
 
   public async create(data: Except<BookingProperties, 'id'>): Promise<Booking> {
     return await this.databaseConnection.transactional(async tx => {
-      const carId = data.carId
-      const allBookings = await this.gettingBookingsWithSameCarIds(carId)
-      const startDate = dayjs(data.startDate)
-      const endDate = dayjs(data.endDate)
-      const hasOverlap = allBookings?.some(booking => {
-        return (
-          booking.startDate.isBefore(endDate) ||
-          (booking.startDate.isSame(endDate) &&
-            booking.endDate.isAfter(startDate)) ||
-          booking.endDate.isSame(startDate)
-        )
-      })
-
-      if (hasOverlap) throw new BookingOverlapError(carId)
-
+      await this.getOverlapBookings(data.carId, data.startDate, data.endDate)
       return this.bookingRepository.insert(tx, data)
     })
   }

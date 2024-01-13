@@ -114,7 +114,7 @@ export class BookingController {
         endDate.isSame(startDate)
       )
         throw new BadRequestException(
-          'start date can not be before current date or after than end date',
+          'start date cannot be before the current date or after the end date',
         )
       const bookingData = {
         ...data,
