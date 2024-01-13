@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import { Dayjs } from 'dayjs'
+import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
@@ -10,6 +10,7 @@ import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
+import { BookingOverlapError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -25,6 +26,13 @@ export class BookingService implements IBookingService {
     this.databaseConnection = databaseConnection
     this.logger = new Logger(BookingService.name)
   }
+
+  private async gettingBookingsWithSameCarIds(carId: CarID) {
+    return await this.databaseConnection.transactional(
+      async tx => await this.bookingRepository.findByCarId(tx, carId),
+    )
+  }
+
   public async getAll(): Promise<Booking[]> {
     return this.databaseConnection.transactional(
       async tx => await this.bookingRepository.getAll(tx),
@@ -36,12 +44,28 @@ export class BookingService implements IBookingService {
     )
   }
 
-  /* eslint-disable @typescript-eslint/require-await */
   public async create(data: Except<BookingProperties, 'id'>): Promise<Booking> {
-    return await this.databaseConnection.transactional(async tx =>
-      this.bookingRepository.insert(tx, data),
-    )
+    return await this.databaseConnection.transactional(async tx => {
+      const carId = data.carId
+      const allBookings = await this.gettingBookingsWithSameCarIds(carId)
+      const startDate = dayjs(data.startDate)
+      const endDate = dayjs(data.endDate)
+      const hasOverlap = allBookings?.some(booking => {
+        return (
+          booking.startDate.isBefore(endDate) ||
+          (booking.startDate.isSame(endDate) &&
+            booking.endDate.isAfter(startDate)) ||
+          booking.endDate.isSame(startDate)
+        )
+      })
+
+      if (hasOverlap) throw new BookingOverlapError(carId)
+
+      return this.bookingRepository.insert(tx, data)
+    })
   }
+
+  /* eslint-disable @typescript-eslint/require-await */
   public update(
     _carId: BookingID,
     _updates: Partial<{

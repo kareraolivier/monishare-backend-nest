@@ -35,6 +35,19 @@ function rowToDomain(row: Row): Booking {
 }
 @Injectable()
 export class BookingRepository {
+  public async findByCarId(
+    tx: Transaction,
+    carId: CarID,
+  ): Promise<Booking[] | null> {
+    const rows = await tx.manyOrNone<Row>(
+      'SELECT * FROM bookings WHERE car_id= $(carId)',
+      {
+        carId,
+      },
+    )
+    return rows ? rows.map(row => rowToDomain(row)) : null
+  }
+
   public async find(tx: Transaction, id: BookingID): Promise<Booking | null> {
     const maybeRow = await tx.oneOrNone<Row>(
       'SELECT * FROM bookings WHERE id = $(id)',

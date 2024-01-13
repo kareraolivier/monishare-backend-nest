@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   UseGuards,
   Body,
+  BadRequestException,
 } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
@@ -19,6 +20,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
+import dayjs from 'dayjs'
 
 import {
   type BookingID,
@@ -27,6 +29,7 @@ import {
   type User,
   BookingState,
 } from '../../application'
+import { BookingOverlapError } from '../../application/booking/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -92,7 +95,7 @@ export class BookingController {
     description: 'A new booking was created.',
   })
   @ApiBadRequestResponse({
-    description: 'The request was malformed',
+    description: 'The request was malformed check again',
   })
   @ApiConflictResponse({
     description: 'A booking is not successfull.',
@@ -103,14 +106,27 @@ export class BookingController {
     @Body() data: CreateBookingDTO,
   ): Promise<BookingDTO> {
     try {
+      const startDate = dayjs(data.startDate)
+      const endDate = dayjs(data.endDate)
+      if (
+        startDate.isBefore(dayjs()) ||
+        endDate.isBefore(startDate) ||
+        endDate.isSame(startDate)
+      )
+        throw new BadRequestException(
+          'start date can not be before current date or after than end date',
+        )
       const bookingData = {
         ...data,
-        state: BookingState.PICKEDUP,
+        state: BookingState.PENDING,
         renterId: renter.id,
       }
       const createdBooking = await this.bookingService.create(bookingData)
       return BookingDTO.fromModel(createdBooking)
     } catch (error) {
+      if (error instanceof BookingOverlapError) {
+        throw new BadRequestException(error.message)
+      }
       throw error
     }
   }
