@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger'
 import { IsEnum, IsInt, IsNotEmpty, IsPositive } from 'class-validator'
+import { IsDayjs } from 'class-validator-extended'
 import { Dayjs } from 'dayjs'
 import { type Writable } from 'type-fest'
 
@@ -57,6 +58,7 @@ export class BookingDTO {
     type: String,
     nullable: true,
   })
+  @IsDayjs()
   @IsNotEmpty()
   public readonly startDate!: Dayjs
 
@@ -65,6 +67,7 @@ export class BookingDTO {
     type: String,
     nullable: true,
   })
+  @IsDayjs()
   @IsNotEmpty()
   public readonly endDate!: Dayjs
 

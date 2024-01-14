@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common'
-import { Dayjs } from 'dayjs'
+import dayjs from 'dayjs'
 
 import {
   Booking,
@@ -17,8 +17,8 @@ type Row = {
   car_id: number
   renter_id: number
   state: string
-  start_date: Dayjs
-  end_date: Dayjs
+  start_date: string
+  end_date: string
 }
 
 function rowToDomain(row: Row): Booking {
@@ -27,8 +27,8 @@ function rowToDomain(row: Row): Booking {
     carId: row.car_id as CarID,
     renterId: row.renter_id as UserID,
     state: row.state as BookingState,
-    startDate: row.start_date,
-    endDate: row.end_date,
+    startDate: dayjs(row.start_date),
+    endDate: dayjs(row.end_date),
   })
 }
 @Injectable()
