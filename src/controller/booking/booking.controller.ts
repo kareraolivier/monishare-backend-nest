@@ -98,7 +98,7 @@ export class BookingController {
     description: 'The request was malformed check again',
   })
   @ApiConflictResponse({
-    description: 'A booking is not successfull.',
+    description: 'The booking is not successfull.',
   })
   @Post()
   public async create(

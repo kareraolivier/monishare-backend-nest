@@ -37,7 +37,6 @@ export class BookingService implements IBookingService {
       const end = dayjs(endDate)
       const allBookings = await this.bookingRepository.findByCarId(tx, carId)
 
-      //checking booking overlap and throw an error
       const hasOverlap = allBookings?.some(
         booking =>
           start.isBefore(booking.endDate) && end.isAfter(booking.startDate),
@@ -59,7 +58,8 @@ export class BookingService implements IBookingService {
 
   public async create(data: Except<BookingProperties, 'id'>): Promise<Booking> {
     return await this.databaseConnection.transactional(async tx => {
-      await this.getOverlapBookings(data.carId, data.startDate, data.endDate)
+      const { carId, startDate, endDate } = data
+      await this.getOverlapBookings(carId, startDate, endDate)
       return this.bookingRepository.insert(tx, data)
     })
   }
