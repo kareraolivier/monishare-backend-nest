@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseIntPipe, UseGuards } from '@nestjs/common'
+import { Controller, Get, Param,Patch, ParseIntPipe,Body, UseGuards } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -10,10 +10,11 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { type BookingID, IBookingService, Booking } from '../../application'
+import { type BookingID, IBookingService, Booking, type User } from '../../application'
 import { AuthenticationGuard } from '../authentication.guard'
+import { CurrentUser } from '../current-user.decorator'
 
-import { BookingDTO } from './booking.dto'
+import { BookingDTO, PatchBookingDTO } from './booking.dto'
 @ApiTags(Booking.name)
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -66,4 +67,45 @@ export class BookingController {
     const booking = await this.bookingService.get(id)
     return BookingDTO.fromModel(booking)
   }
+
+
+  @ApiOperation({
+    summary: 'Update an existing booking.',
+  })
+  @ApiOkResponse({
+    description: 'The booking was updated.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'The request was malformed, e.g. missing or invalid parameter or property in the request body.',
+  })
+  @ApiNotFoundResponse({
+    description: 'No booking with the given id was found.',
+  })
+  @Patch(':id')
+  public async patch(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) bookingId: BookingID,
+    @Body() data: PatchBookingDTO,
+  ): Promise<BookingDTO> {
+    try {
+      const booking = await this.bookingService.update(bookingId, data, user.id)
+      return BookingDTO.fromModel(booking)
+    } catch (error) {
+     
+      throw error
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
 }
