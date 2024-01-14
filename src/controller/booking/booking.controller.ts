@@ -88,13 +88,8 @@ export class BookingController {
     @Param('id', ParseIntPipe) bookingId: BookingID,
     @Body() data: PatchBookingDTO,
   ): Promise<BookingDTO> {
-    try {
       const booking = await this.bookingService.update(bookingId, data, user.id)
       return BookingDTO.fromModel(booking)
-    } catch (error) {
-     
-      throw error
-    }
   }
 
 

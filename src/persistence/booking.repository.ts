@@ -68,7 +68,4 @@ export class BookingRepository {
     }
     return rowToDomain(row)
   }
-
-
-
 }

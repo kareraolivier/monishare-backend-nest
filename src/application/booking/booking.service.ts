@@ -56,9 +56,6 @@ export class BookingService implements IBookingService {
       return this.bookingRepository.update(tx, updatedBooking)
     })
   }
-
-
-
   public create(_properties: {
     carId: CarID
     state: BookingState
