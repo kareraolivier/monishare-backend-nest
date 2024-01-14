@@ -3,25 +3,28 @@ import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
-import { CarID } from '../car'
+import { type CarID, ICarService } from '../car'
 import { UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
-import { BookingOverlapError } from './error'
+import { BookingOverlapError, BookingYourOwnCarError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
+  private readonly carService: ICarService
   private readonly bookingRepository: IBookingRepository
   private readonly databaseConnection: IDatabaseConnection
   private readonly logger: Logger
 
   public constructor(
+    carService: ICarService,
     bookingRepository: IBookingRepository,
     databaseConnection: IDatabaseConnection,
   ) {
+    this.carService = carService
     this.bookingRepository = bookingRepository
     this.databaseConnection = databaseConnection
     this.logger = new Logger(BookingService.name)
@@ -45,6 +48,11 @@ export class BookingService implements IBookingService {
     })
   }
 
+  private async checkCarOwner(carId: CarID, renterId: UserID): Promise<void> {
+    const { ownerId } = await this.carService.get(carId)
+    if (ownerId === renterId) throw new BookingYourOwnCarError(carId)
+  }
+
   public async getAll(): Promise<Booking[]> {
     return this.databaseConnection.transactional(
       async tx => await this.bookingRepository.getAll(tx),
@@ -56,9 +64,13 @@ export class BookingService implements IBookingService {
     )
   }
 
-  public async create(data: Except<BookingProperties, 'id'>): Promise<Booking> {
+  public async create(
+    data: Except<BookingProperties, 'id'>,
+    renterId: UserID,
+  ): Promise<Booking> {
     return await this.databaseConnection.transactional(async tx => {
       const { carId, startDate, endDate } = data
+      await this.checkCarOwner(carId, renterId)
       await this.getOverlapBookings(carId, startDate, endDate)
       return this.bookingRepository.insert(tx, data)
     })

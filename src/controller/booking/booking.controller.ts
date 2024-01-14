@@ -28,8 +28,9 @@ import {
   Booking,
   type User,
   BookingState,
+  BookingOverlapError,
+  BookingYourOwnCarError,
 } from '../../application'
-import { BookingOverlapError } from '../../application/booking/error'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -121,10 +122,16 @@ export class BookingController {
         state: BookingState.PENDING,
         renterId: renter.id,
       }
-      const createdBooking = await this.bookingService.create(bookingData)
+      const createdBooking = await this.bookingService.create(
+        bookingData,
+        renter.id,
+      )
       return BookingDTO.fromModel(createdBooking)
     } catch (error) {
       if (error instanceof BookingOverlapError) {
+        throw new BadRequestException(error.message)
+      }
+      if (error instanceof BookingYourOwnCarError) {
         throw new BadRequestException(error.message)
       }
       throw error
