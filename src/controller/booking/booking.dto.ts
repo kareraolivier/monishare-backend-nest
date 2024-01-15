@@ -1,5 +1,6 @@
 import { ApiProperty, PartialType, PickType } from '@nestjs/swagger'
 import { IsEnum, IsInt, IsNotEmpty, IsPositive } from 'class-validator'
+import { IsDayjs } from 'class-validator-extended'
 import { Dayjs } from 'dayjs'
 import { type Writable } from 'type-fest'
 

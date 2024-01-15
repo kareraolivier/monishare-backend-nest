@@ -85,6 +85,8 @@ export class BookingController {
   public async get(
     @Param('id', ParseIntPipe) id: BookingID,
   ): Promise<BookingDTO> {
+    if (!id) throw new BadRequestException('Invalid booking ID.')
+
     const booking = await this.bookingService.get(id)
     return BookingDTO.fromModel(booking)
   }
