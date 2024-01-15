@@ -5,6 +5,7 @@ import {
   mockBookingRepository,
   mockDatabaseConnection,
 } from '../../mocks'
+import { CarService } from '../car'
 import { UserBuilder } from '../user/user.builder'
 
 import { type BookingID } from './booking'
@@ -13,6 +14,7 @@ import { BookingBuilder } from './booking.builder'
 import { BookingService } from './booking.service'
 
 describe('BookingService', () => {
+  let carService: CarService
   let bookingService: BookingService
   let bookingRepositoryMock: BookingRepositoryMock
   let databaseConnectionMock: DatabaseConnectionMock
@@ -22,6 +24,7 @@ describe('BookingService', () => {
     databaseConnectionMock = mockDatabaseConnection()
 
     bookingService = new BookingService(
+      carService,
       bookingRepositoryMock,
       databaseConnectionMock,
     )

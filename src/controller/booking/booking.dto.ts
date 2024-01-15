@@ -55,8 +55,8 @@ export class BookingDTO {
 
   @ApiProperty({
     description: 'The start date of booking.',
-    type: String,
-    nullable: true,
+    type: 'string',
+    example: '2024-02-08T14:07:27.828Z',
   })
   @IsDayjs()
   @IsNotEmpty()
@@ -64,8 +64,8 @@ export class BookingDTO {
 
   @ApiProperty({
     description: 'The end date of booking.',
-    type: String,
-    nullable: true,
+    type: 'string',
+    example: '2024-02-09T14:07:28.828Z',
   })
   @IsDayjs()
   @IsNotEmpty()
@@ -96,8 +96,6 @@ export class BookingDTO {
 
 export class CreateBookingDTO extends PickType(BookingDTO, [
   'carId',
-  'renterId',
-  'state',
   'startDate',
   'endDate',
 ] as const) {}
