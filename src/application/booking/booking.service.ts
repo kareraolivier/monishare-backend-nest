@@ -36,10 +36,9 @@ export class BookingService implements IBookingService {
     endDate: Dayjs,
   ) {
     return await this.databaseConnection.transactional(async tx => {
+      const allBookings = await this.bookingRepository.findByCarId(tx, carId)
       const start = dayjs(startDate)
       const end = dayjs(endDate)
-      const allBookings = await this.bookingRepository.findByCarId(tx, carId)
-
       const hasOverlap = allBookings?.some(
         booking =>
           start.isBefore(booking.endDate) && end.isAfter(booking.startDate),
