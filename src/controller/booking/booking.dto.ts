@@ -58,7 +58,6 @@ export class BookingDTO {
     type: 'string',
     example: '2024-02-08T14:07:27.828Z',
   })
-  @IsDayjs()
   @IsNotEmpty()
   public readonly startDate!: Dayjs
 
@@ -67,7 +66,6 @@ export class BookingDTO {
     type: 'string',
     example: '2024-02-09T14:07:28.828Z',
   })
-  @IsDayjs()
   @IsNotEmpty()
   public readonly endDate!: Dayjs
 
