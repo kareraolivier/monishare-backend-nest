@@ -20,7 +20,6 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
-import dayjs from 'dayjs'
 
 import {
   type BookingID,
@@ -31,6 +30,7 @@ import {
   BookingOverlapError,
   BookingYourOwnCarError,
 } from '../../application'
+import { ValidationError } from '../../util'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -107,16 +107,6 @@ export class BookingController {
     @Body() data: CreateBookingDTO,
   ): Promise<BookingDTO> {
     try {
-      const startDate = dayjs(data.startDate)
-      const endDate = dayjs(data.endDate)
-      if (
-        startDate.isBefore(dayjs()) ||
-        endDate.isBefore(startDate) ||
-        endDate.isSame(startDate)
-      )
-        throw new BadRequestException(
-          'start date cannot be before the current date or after the end date',
-        )
       const bookingData = {
         ...data,
         state: BookingState.PENDING,
@@ -128,10 +118,13 @@ export class BookingController {
       )
       return BookingDTO.fromModel(createdBooking)
     } catch (error) {
-      if (error instanceof BookingOverlapError) {
+      if (error instanceof ValidationError) {
         throw new BadRequestException(error.message)
       }
       if (error instanceof BookingYourOwnCarError) {
+        throw new BadRequestException(error.message)
+      }
+      if (error instanceof BookingOverlapError) {
         throw new BadRequestException(error.message)
       }
       throw error
