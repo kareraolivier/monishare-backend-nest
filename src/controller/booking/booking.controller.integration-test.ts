@@ -20,6 +20,7 @@ import { configureGlobalEnhancers } from '../../setup-app'
 import { AuthenticationGuard } from '../authentication.guard'
 
 import { BookingController } from './booking.controller'
+import { Booking } from 'src/application';
 
 describe('bookingController', () => {
   const user = UserBuilder.from({
@@ -132,4 +133,38 @@ describe('bookingController', () => {
       .get(`/booking`)
       .expect(HttpStatus.NOT_FOUND)
   })
+
+  describe('update', () => {
+    const bookingId = 3
+    it('should get 404 not found when route is not exist', async () => {
+      await request(app.getHttpServer())
+        .patch(`/booking/${bookingId}`)
+        .expect(HttpStatus.NOT_FOUND)
+    })
+
+    it('should update a new booking', async () => {
+      const bookingId = 42
+      const newUpdatedBooking = new BookingBuilder().withId(bookingId).build()
+      bookingServiceMock.update.mockResolvedValue(newUpdatedBooking)
+
+      authenticationGuardMock.user = UserBuilder.from(user).build()
+
+      await request(app.getHttpServer())
+        .patch(`/bookings/${bookingId}`)
+        .send({
+          ...newUpdatedBooking,
+        })
+        .expect(HttpStatus.OK)
+        .expect({ ...newUpdatedBooking })
+
+      expect(bookingServiceMock.update).toHaveBeenCalledWith(
+        bookingId,
+        newUpdatedBooking,
+        bookingId,
+      )
+    })
+  })
+
+
+
 })
