@@ -30,7 +30,6 @@ import {
   BookingState,
   BookingOverlapError,
   BookingYourOwnCarError,
-  UserID,
   AccessDeniedError,
 } from '../../application'
 import { ValidationError } from '../../util'
