@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common'
 import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
+import { AccessDeniedError } from '../user'
 import { type UserID } from '../user'
-import { AccessDeniedError } from '../user/access-denied.error'
 
 import { Car, type CarID, type CarProperties } from './car'
 import { ICarRepository } from './car.repository.interface'
