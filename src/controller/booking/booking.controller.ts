@@ -1,11 +1,12 @@
 import {
   Controller,
   Get,
-  Post,
   Param,
+  Patch,
+  Body,
+  Post,
   ParseIntPipe,
   UseGuards,
-  Body,
   BadRequestException,
 } from '@nestjs/common'
 import {
@@ -34,7 +35,7 @@ import { ValidationError } from '../../util'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
-import { BookingDTO, CreateBookingDTO } from './booking.dto'
+import { BookingDTO, CreateBookingDTO, PatchBookingDTO } from './booking.dto'
 
 @ApiTags(Booking.name)
 @ApiBearerAuth()
@@ -91,6 +92,28 @@ export class BookingController {
     return BookingDTO.fromModel(booking)
   }
 
+  @ApiOperation({
+    summary: 'Update an existing booking.',
+  })
+  @ApiOkResponse({
+    description: 'The booking was updated.',
+  })
+  @ApiBadRequestResponse({
+    description:
+      'The request was malformed, e.g. missing or invalid parameter or property in the request body.',
+  })
+  @ApiNotFoundResponse({
+    description: 'No booking with the given id was found.',
+  })
+  @Patch(':id')
+  public async patch(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) bookingId: BookingID,
+    @Body() data: PatchBookingDTO,
+  ): Promise<BookingDTO> {
+    const booking = await this.bookingService.update(bookingId, data, user.id)
+    return BookingDTO.fromModel(booking)
+  }
   @ApiOperation({
     summary: 'Create a new booking.',
   })

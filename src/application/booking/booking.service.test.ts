@@ -50,7 +50,7 @@ describe('BookingService', () => {
   })
 
   describe('update', () => {
-    xit('should update a booking', async () => {
+    it('should update a booking', async () => {
       const renter = new UserBuilder().build()
       const booking = new BookingBuilder()
         .withRenter(renter)
@@ -68,7 +68,7 @@ describe('BookingService', () => {
         bookingService.update(
           booking.id,
           { state: BookingState.ACCEPTED },
-          renter.id,
+          // renter.id,
         ),
       ).resolves.toEqual(updatedBooking)
     })
