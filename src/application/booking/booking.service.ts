@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
@@ -10,7 +10,7 @@ import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
-import { BookingOverlapError, BookingYourOwnCarError } from './error'
+import { BookingOverlapError, BookingYourOwnCarError,BookingsStateTransitionError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -47,6 +47,24 @@ export class BookingService implements IBookingService {
       if (hasOverlap) throw new BookingOverlapError(carId)
     })
   }
+  private validateStateTransition(
+    currentState: BookingState,
+    newState: BookingState,
+    bookingId:BookingID
+  ): void {
+    const isValidTransition =
+      (currentState === BookingState.PENDING &&
+        [BookingState.ACCEPTED, BookingState.DECLINED].includes(newState)) ||
+      (currentState === BookingState.ACCEPTED &&
+        newState === BookingState.PICKEDUP) ||
+      (currentState === BookingState.PICKEDUP &&
+        newState === BookingState.RETURNED)
+
+    if (!isValidTransition) {
+  throw  new BookingsStateTransitionError(bookingId)
+    }
+  }
+
 
   private async checkCarOwner(carId: CarID, renterId: UserID): Promise<void> {
     const { ownerId } = await this.carService.get(carId)
@@ -81,12 +99,11 @@ export class BookingService implements IBookingService {
   public async update(
     bookingId: BookingID,
     updates: Partial<Except<BookingProperties, 'id'>>,
-    // currentUserId: UserID,
   ): Promise<Booking> {
     return this.databaseConnection.transactional(async tx => {
       const booking = await this.bookingRepository.get(tx, bookingId)
       if (updates.state !== undefined) {
-        this.validateStateTransition(booking.state, updates.state)
+        this.validateStateTransition(booking.state, updates.state,bookingId)
       }
       const updatedBooking = new Booking({
         ...booking,
@@ -97,20 +114,6 @@ export class BookingService implements IBookingService {
       return this.bookingRepository.update(tx, updatedBooking)
     })
   }
-  private validateStateTransition(
-    currentState: BookingState,
-    newState: BookingState,
-  ): void {
-    const isValidTransition =
-      (currentState === BookingState.PENDING &&
-        [BookingState.ACCEPTED, BookingState.DECLINED].includes(newState)) ||
-      (currentState === BookingState.ACCEPTED &&
-        newState === BookingState.PICKEDUP) ||
-      (currentState === BookingState.PICKEDUP &&
-        newState === BookingState.RETURNED)
 
-    if (!isValidTransition) {
-      throw new BadRequestException('invalid transition')
-    }
-  }
+
 }
