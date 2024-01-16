@@ -119,11 +119,10 @@ describe('bookingController', () => {
         })
     })
     it('should return bad request if id is undefined', async () => {
-      const bookingId = undefined
       bookingServiceMock.get.mockResolvedValue(bookingTwo)
 
       await request(app.getHttpServer())
-        .get(`/bookings/${bookingId}`)
+        .get('/bookings/undefined')
         .expect(HttpStatus.BAD_REQUEST)
     })
   })

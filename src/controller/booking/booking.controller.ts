@@ -1,11 +1,14 @@
 import {
   Controller,
   Get,
-  Param,
+  Post,
   Patch,
+  Param,
   ParseIntPipe,
-  Body,
   UseGuards,
+  Body,
+  BadRequestException,
+
 } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
@@ -14,6 +17,8 @@ import {
   ApiNotFoundResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiCreatedResponse,
+  ApiConflictResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
@@ -23,11 +28,21 @@ import {
   IBookingService,
   Booking,
   type User,
+
 } from '../../application'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
-
 import { BookingDTO, PatchBookingDTO } from './booking.dto'
+  BookingState,
+  BookingOverlapError,
+  BookingYourOwnCarError,
+} from '../../application'
+import { ValidationError } from '../../util'
+import { AuthenticationGuard } from '../authentication.guard'
+import { CurrentUser } from '../current-user.decorator'
+import { BookingDTO, CreateBookingDTO } from './booking.dto'
+
+
 @ApiTags(Booking.name)
 @ApiBearerAuth()
 @ApiUnauthorizedResponse({
@@ -77,11 +92,14 @@ export class BookingController {
   public async get(
     @Param('id', ParseIntPipe) id: BookingID,
   ): Promise<BookingDTO> {
+    if (!id) throw new BadRequestException('Invalid booking ID.')
+
     const booking = await this.bookingService.get(id)
     return BookingDTO.fromModel(booking)
   }
 
   @ApiOperation({
+
     summary: 'Update an existing booking.',
   })
   @ApiOkResponse({
@@ -102,5 +120,46 @@ export class BookingController {
   ): Promise<BookingDTO> {
     const booking = await this.bookingService.update(bookingId, data, user.id)
     return BookingDTO.fromModel(booking)
+=======
+    summary: 'Create a new booking.',
+  })
+  @ApiCreatedResponse({
+    description: 'A new booking was created.',
+  })
+  @ApiBadRequestResponse({
+    description: 'The request was malformed check again',
+  })
+  @ApiConflictResponse({
+    description: 'The booking is not successfull.',
+  })
+  @Post()
+  public async create(
+    @CurrentUser() renter: User,
+    @Body() data: CreateBookingDTO,
+  ): Promise<BookingDTO> {
+    try {
+      const bookingData = {
+        ...data,
+        state: BookingState.PENDING,
+        renterId: renter.id,
+      }
+      const createdBooking = await this.bookingService.create(
+        bookingData,
+        renter.id,
+      )
+      return BookingDTO.fromModel(createdBooking)
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw new BadRequestException(error.message)
+      }
+      if (error instanceof BookingYourOwnCarError) {
+        throw new BadRequestException(error.message)
+      }
+      if (error instanceof BookingOverlapError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
+    }
+
   }
 }
