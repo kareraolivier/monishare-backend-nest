@@ -51,7 +51,7 @@ export class BookingRepository {
     if (!booking) throw new BookingNotFoundError(id)
     return booking
   }
-  
+
   public async update(tx: Transaction, booking: Booking): Promise<Booking> {
     const row = await tx.oneOrNone<Row>(
       `

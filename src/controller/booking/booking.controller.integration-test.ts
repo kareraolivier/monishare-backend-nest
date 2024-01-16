@@ -20,7 +20,7 @@ import { configureGlobalEnhancers } from '../../setup-app'
 import { AuthenticationGuard } from '../authentication.guard'
 
 import { BookingController } from './booking.controller'
-import { Booking } from 'src/application';
+import { Booking } from 'src/application'
 
 describe('bookingController', () => {
   const user = UserBuilder.from({
@@ -164,7 +164,4 @@ describe('bookingController', () => {
       )
     })
   })
-
-
-
 })

@@ -43,7 +43,7 @@ export class BookingService implements IBookingService {
   public async update(
     bookingId: BookingID,
     updates: Partial<Except<BookingProperties, 'id'>>,
-    currentUserId: UserID,
+    // currentUserId: UserID,
   ): Promise<Booking> {
     return this.databaseConnection.transactional(async tx => {
       const booking = await this.bookingRepository.get(tx, bookingId)
