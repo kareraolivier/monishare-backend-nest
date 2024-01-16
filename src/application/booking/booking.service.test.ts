@@ -65,7 +65,7 @@ describe('BookingService', () => {
         bookingService.update(
           booking.id,
           { state: BookingState.ACCEPTED },
-          renter.id,
+          // renter.id,
         ),
       ).resolves.toEqual(updatedBooking)
     })
