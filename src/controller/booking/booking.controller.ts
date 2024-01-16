@@ -1,4 +1,12 @@
-import { Controller, Get, Param,Patch, ParseIntPipe,Body, UseGuards } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  Param,
+  Patch,
+  ParseIntPipe,
+  Body,
+  UseGuards,
+} from '@nestjs/common'
 import {
   ApiBadRequestResponse,
   ApiBearerAuth,
@@ -10,7 +18,12 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
 
-import { type BookingID, IBookingService, Booking, type User } from '../../application'
+import {
+  type BookingID,
+  IBookingService,
+  Booking,
+  type User,
+} from '../../application'
 import { AuthenticationGuard } from '../authentication.guard'
 import { CurrentUser } from '../current-user.decorator'
 
@@ -68,7 +81,6 @@ export class BookingController {
     return BookingDTO.fromModel(booking)
   }
 
-
   @ApiOperation({
     summary: 'Update an existing booking.',
   })
@@ -88,19 +100,7 @@ export class BookingController {
     @Param('id', ParseIntPipe) bookingId: BookingID,
     @Body() data: PatchBookingDTO,
   ): Promise<BookingDTO> {
-      const booking = await this.bookingService.update(bookingId, data, user.id)
-      return BookingDTO.fromModel(booking)
+    const booking = await this.bookingService.update(bookingId, data, user.id)
+    return BookingDTO.fromModel(booking)
   }
-
-
-
-
-
-
-
-
-
-
-
-
 }
