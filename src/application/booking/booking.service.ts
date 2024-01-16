@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
@@ -7,6 +7,7 @@ import { type CarID, ICarService } from '../car'
 import { UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
+import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
 import { BookingOverlapError, BookingYourOwnCarError } from './error'
@@ -84,6 +85,9 @@ export class BookingService implements IBookingService {
   ): Promise<Booking> {
     return this.databaseConnection.transactional(async tx => {
       const booking = await this.bookingRepository.get(tx, bookingId)
+      if (updates.state !== undefined) {
+        this.validateStateTransition(booking.state, updates.state)
+      }
       const updatedBooking = new Booking({
         ...booking,
         ...updates,
@@ -92,5 +96,21 @@ export class BookingService implements IBookingService {
 
       return this.bookingRepository.update(tx, updatedBooking)
     })
+  }
+  private validateStateTransition(
+    currentState: BookingState,
+    newState: BookingState,
+  ): void {
+    const isValidTransition =
+      (currentState === BookingState.PENDING &&
+        [BookingState.ACCEPTED, BookingState.DECLINED].includes(newState)) ||
+      (currentState === BookingState.ACCEPTED &&
+        newState === BookingState.PICKEDUP) ||
+      (currentState === BookingState.PICKEDUP &&
+        newState === BookingState.RETURNED)
+
+    if (!isValidTransition) {
+      throw new BadRequestException('invalid transition')
+    }
   }
 }
