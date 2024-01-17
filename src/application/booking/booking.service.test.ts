@@ -11,7 +11,7 @@ import {
 import { AccessDeniedError } from '../access-denied.error'
 import { type CarID } from '../car'
 import { CarBuilder } from '../car/car.builder'
-import { UserID } from '../user'
+import { type UserID } from '../user'
 
 import { type BookingID } from './booking'
 import { BookingState } from './booking-state'
