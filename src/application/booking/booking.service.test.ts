@@ -54,7 +54,7 @@ describe('BookingService', () => {
       const renter = new UserBuilder().build()
       const booking = new BookingBuilder()
         .withRenter(renter)
-        .withState(BookingState.ACCEPTED)
+        .withState(BookingState.PENDING)
         .build()
       const updatedBooking = BookingBuilder.from(booking)
         .withState(BookingState.ACCEPTED)
@@ -65,11 +65,7 @@ describe('BookingService', () => {
         .mockResolvedValue(updatedBooking)
 
       await expect(
-        bookingService.update(
-          booking.id,
-          { state: BookingState.ACCEPTED },
-          // renter.id,
-        ),
+        bookingService.update(booking.id, { state: BookingState.ACCEPTED }),
       ).resolves.toEqual(updatedBooking)
     })
   })
