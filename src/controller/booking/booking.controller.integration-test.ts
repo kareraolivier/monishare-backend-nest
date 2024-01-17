@@ -181,7 +181,6 @@ describe('bookingController', () => {
       const newUpdatedBooking = new BookingBuilder().withId(bookingId).build()
       bookingServiceMock.update.mockResolvedValue(newUpdatedBooking)
 
-      authenticationGuardMock.user = UserBuilder.from(user).build()
       const expected = {
         ...newUpdatedBooking,
         startDate: '2024-02-08T14:07:27.828Z',
