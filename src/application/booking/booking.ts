@@ -1,8 +1,9 @@
-import { IsInt, IsPositive, IsNotEmpty, IsEnum } from 'class-validator'
+import { IsInt, IsPositive, IsEnum } from 'class-validator'
+import { IsDayjs } from 'class-validator-extended'
 import { Dayjs } from 'dayjs'
 import { type Opaque } from 'type-fest'
 
-import { validate } from '../../util'
+import { ValidationError, validate } from '../../util'
 import { type CarID } from '../car'
 import { UserID } from '../user'
 
@@ -35,10 +36,10 @@ export class Booking {
   @IsEnum(BookingState)
   public readonly state: BookingState
 
-  @IsNotEmpty()
+  @IsDayjs()
   public readonly startDate: Dayjs
 
-  @IsNotEmpty()
+  @IsDayjs()
   public readonly endDate: Dayjs
 
   public constructor(data: BookingProperties) {
@@ -50,5 +51,9 @@ export class Booking {
     this.endDate = data.endDate
 
     validate(this)
+    if (!this.startDate.isBefore(this.endDate))
+      throw new ValidationError(
+        'start date cannot be before the current date or after the end date',
+      )
   }
 }

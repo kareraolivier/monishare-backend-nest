@@ -1,7 +1,12 @@
+import dayjs from 'dayjs'
+
 import {
   setupIntegrationTest,
   bookings,
+  users,
 } from '../../jest.integration-test-setup'
+import { BookingID, BookingState, CarID, UserID } from '../application'
+import { BookingNotFoundError } from '../application/booking/booking-not-found.error'
 
 import { BookingRepository } from './booking.repository'
 
@@ -47,6 +52,48 @@ describe('BookingRepository', () => {
         startDate: bookings.beatrice.startDate.toISOString(),
         endDate: bookings.beatrice.endDate.toISOString(),
       })
+    })
+  })
+
+  describe('update', () => {
+    it('should update a booking ', async () => {
+      const bookingData = {
+        ...bookings.beatrice,
+      }
+      const actual = await execute(tx =>
+        bookingRepository.update(tx, bookingData),
+      )
+      expect(actual).toEqual(bookingData)
+    })
+
+    it('should throw if a booking does not exist', async () => {
+      const updated = {
+        id: 2 as BookingID,
+        carId: 1 as CarID,
+        renterId: users.izzedin.id,
+        state: BookingState.PENDING,
+        startDate: dayjs('2024-02-08T14:07:27.828Z'),
+        endDate: dayjs('2024-02-09T14:07:28.828Z'),
+      }
+      await expect(
+        execute(tx => bookingRepository.update(tx, updated)),
+      ).rejects.toThrow(BookingNotFoundError)
+    })
+  })
+
+  describe('create', () => {
+    it('should create new booking', async () => {
+      const bookingData = {
+        carId: 1 as CarID,
+        renterId: 3 as UserID,
+        state: BookingState.PENDING,
+        startDate: dayjs('2024-02-08T14:07:27.828Z'),
+        endDate: dayjs('2024-02-09T14:07:28.828Z'),
+      }
+      const actual = await execute(tx =>
+        bookingRepository.insert(tx, bookingData),
+      )
+      expect(actual).toEqual({ ...bookingData, id: 2 as BookingID })
     })
   })
 })
