@@ -84,9 +84,11 @@ export function up(pgm: MigrationBuilder): void {
     },
     start_date: {
       type: 'timestamptz',
+      notNull: true,
     },
     end_date: {
       type: 'timestamptz',
+      notNull: true,
     },
   })
 }

@@ -29,7 +29,7 @@ export class BookingBuilder {
   private readonly properties: UntaggedBookingProperties = {
     id: 1 as BookingID,
     carId: 1 as CarID,
-    renterId: 1 as UserID,
+    renterId: 3 as UserID,
     state: BookingState.PENDING,
     startDate: dayjs('2024-02-08T14:07:27.828Z'),
     endDate: dayjs('2024-02-09T14:07:28.828Z'),

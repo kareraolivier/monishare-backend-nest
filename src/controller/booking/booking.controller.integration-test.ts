@@ -4,11 +4,11 @@ import dayjs from 'dayjs'
 import request from 'supertest'
 
 import {
-  BookingID,
+  type BookingID,
   BookingState,
-  CarID,
+  type CarID,
   IBookingService,
-  UserID,
+  type UserID,
 } from '../../application'
 import { UserBuilder, BookingBuilder } from '../../builders'
 import {
@@ -118,12 +118,47 @@ describe('bookingController', () => {
         })
     })
     it('should return bad request if id is undefined', async () => {
-      const bookingId = undefined
       bookingServiceMock.get.mockResolvedValue(bookingTwo)
 
       await request(app.getHttpServer())
-        .get(`/bookings/${bookingId}`)
+        .get('/bookings/undefined')
         .expect(HttpStatus.BAD_REQUEST)
+    })
+  })
+
+  describe('create', () => {
+    it('should create a new booking', async () => {
+      const booking = new BookingBuilder().withRenter(42).build()
+      bookingServiceMock.create.mockResolvedValue(booking)
+      authenticationGuardMock.user = UserBuilder.from(user).build()
+
+      await request(app.getHttpServer())
+        .post(`/bookings`)
+        .send({
+          carId: booking.carId,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+        })
+        .expect(HttpStatus.CREATED)
+        .expect({
+          id: booking.id,
+          carId: booking.carId,
+          renterId: booking.renterId,
+          state: booking.state,
+          startDate: booking.startDate.toISOString(),
+          endDate: booking.endDate.toISOString(),
+        })
+
+      expect(bookingServiceMock.create).toHaveBeenCalledWith(
+        {
+          carId: booking.carId,
+          renterId: booking.renterId,
+          state: booking.state,
+          startDate: booking.startDate.toISOString(),
+          endDate: booking.endDate.toISOString(),
+        },
+        user.id,
+      )
     })
   })
 
@@ -131,5 +166,39 @@ describe('bookingController', () => {
     await request(app.getHttpServer())
       .get(`/booking`)
       .expect(HttpStatus.NOT_FOUND)
+  })
+
+  describe('update', () => {
+    const bookingId = 3
+    it('should get 404 not found when route is not exist', async () => {
+      await request(app.getHttpServer())
+        .patch(`/booking/${bookingId}`)
+        .expect(HttpStatus.NOT_FOUND)
+    })
+
+    it('should update a new booking', async () => {
+      const bookingId = 42
+      const newUpdatedBooking = new BookingBuilder().withId(bookingId).build()
+      bookingServiceMock.update.mockResolvedValue(newUpdatedBooking)
+
+      const expected = {
+        ...newUpdatedBooking,
+        startDate: '2024-02-08T14:07:27.828Z',
+        endDate: '2024-02-09T14:07:28.828Z',
+      }
+      await request(app.getHttpServer())
+        .patch(`/bookings/${bookingId}`)
+        .send({
+          ...newUpdatedBooking,
+        })
+        .expect(HttpStatus.OK)
+        .expect({ ...expected })
+
+      expect(bookingServiceMock.update).toHaveBeenCalledWith(
+        bookingId,
+        { ...expected },
+        bookingId,
+      )
+    })
   })
 })
