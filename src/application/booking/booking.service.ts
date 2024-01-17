@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
-import { type CarID, ICarService } from '../car'
+import { type CarID, ICarRepository } from '../car'
 import { UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
@@ -13,17 +13,17 @@ import { BookingOverlapError, BookingYourOwnCarError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
-  private readonly carService: ICarService
+  private readonly carRepository: ICarRepository
   private readonly bookingRepository: IBookingRepository
   private readonly databaseConnection: IDatabaseConnection
   private readonly logger: Logger
 
   public constructor(
-    carService: ICarService,
+    carRepository: ICarRepository,
     bookingRepository: IBookingRepository,
     databaseConnection: IDatabaseConnection,
   ) {
-    this.carService = carService
+    this.carRepository = carRepository
     this.bookingRepository = bookingRepository
     this.databaseConnection = databaseConnection
     this.logger = new Logger(BookingService.name)
@@ -47,8 +47,10 @@ export class BookingService implements IBookingService {
   }
 
   private async checkCarOwner(carId: CarID, renterId: UserID): Promise<void> {
-    const { ownerId } = await this.carService.get(carId)
-    if (ownerId === renterId) throw new BookingYourOwnCarError(carId)
+    return this.databaseConnection.transactional(async tx => {
+      const { ownerId } = await this.carRepository.get(tx, carId)
+      if (ownerId === renterId) throw new BookingYourOwnCarError(carId)
+    })
   }
 
   public async getAll(): Promise<Booking[]> {

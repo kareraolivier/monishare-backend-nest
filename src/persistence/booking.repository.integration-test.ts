@@ -5,7 +5,7 @@ import {
   bookings,
   users,
 } from '../../jest.integration-test-setup'
-import { BookingID, BookingState, CarID } from '../application'
+import { BookingID, BookingState, CarID, UserID } from '../application'
 import { BookingNotFoundError } from '../application/booking/booking-not-found.error'
 
 import { BookingRepository } from './booking.repository'
@@ -76,6 +76,20 @@ describe('BookingRepository', () => {
       await expect(
         execute(tx => bookingRepository.update(tx, updated)),
       ).rejects.toThrow(BookingNotFoundError)
+    })
+  })
+
+  describe('create', () => {
+    it('should create new booking', async () => {
+      const create = {
+        carId: 1 as CarID,
+        renterId: 2 as UserID,
+        state: BookingState.PENDING,
+        startDate: dayjs('2024-02-08T14:07:27.828Z'),
+        endDate: dayjs('2024-02-09T14:07:28.828Z'),
+      }
+      const actual = await execute(tx => bookingRepository.insert(tx, create))
+      expect(actual).toEqual({ ...create, id: 2 as BookingID })
     })
   })
 })

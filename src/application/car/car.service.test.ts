@@ -26,12 +26,20 @@ describe('CarService', () => {
       const owner = new UserBuilder().build()
       const car = new CarBuilder().withOwner(owner).withHorsepower(50).build()
       const updatedCar = CarBuilder.from(car).withHorsepower(555).build()
-      jest.spyOn(carRepositoryMock, 'get').mockResolvedValue(car)
-      jest.spyOn(carRepositoryMock, 'update').mockResolvedValue(updatedCar)
 
       await expect(
         carService.update(car.id, { horsepower: 555 }, owner.id),
       ).resolves.toEqual(updatedCar)
+    })
+  })
+
+  describe('create', () => {
+    it('should create a car', async () => {
+      const owner = new UserBuilder().build()
+      const car = new CarBuilder().withOwner(owner).build()
+      const creatatedCar = CarBuilder.from(car).build()
+
+      await expect(carService.create(car)).resolves.toEqual(creatatedCar)
     })
   })
 })

@@ -1,11 +1,15 @@
+import dayjs from 'dayjs'
+
 import { bookings } from '../../../jest.integration-test-setup'
 import {
   type BookingRepositoryMock,
   type DatabaseConnectionMock,
   mockBookingRepository,
   mockDatabaseConnection,
+  CarRepositoryMock,
+  mockCarRepository,
 } from '../../mocks'
-import { CarService } from '../car'
+import { CarBuilder } from '../car/car.builder'
 import { UserBuilder } from '../user/user.builder'
 
 import { type BookingID } from './booking'
@@ -14,17 +18,18 @@ import { BookingBuilder } from './booking.builder'
 import { BookingService } from './booking.service'
 
 describe('BookingService', () => {
-  let carService: CarService
   let bookingService: BookingService
+  let carRepositoryMock: CarRepositoryMock
   let bookingRepositoryMock: BookingRepositoryMock
   let databaseConnectionMock: DatabaseConnectionMock
 
   beforeEach(() => {
+    carRepositoryMock = mockCarRepository()
     bookingRepositoryMock = mockBookingRepository()
     databaseConnectionMock = mockDatabaseConnection()
 
     bookingService = new BookingService(
-      carService,
+      carRepositoryMock,
       bookingRepositoryMock,
       databaseConnectionMock,
     )
@@ -71,6 +76,25 @@ describe('BookingService', () => {
           // renter.id,
         ),
       ).resolves.toEqual(updatedBooking)
+    })
+  })
+
+  describe('create', () => {
+    it('should create a booking', async () => {
+      const user = new UserBuilder().build()
+      const car = new CarBuilder().with(user).build()
+      const booking = new BookingBuilder()
+        .withRenter(user.id)
+        .withState(BookingState.PENDING)
+        .build()
+      console.log(booking)
+      await expect(
+        bookingService.create(booking, booking.renterId),
+      ).resolves.toEqual({
+        ...booking,
+        startDate: dayjs('2024-02-08T14:07:27.828Z'),
+        endDate: dayjs('2024-02-09T14:07:28.828Z'),
+      })
     })
   })
 })
