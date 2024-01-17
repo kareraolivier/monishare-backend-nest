@@ -9,7 +9,6 @@ import {
   type BookingRepositoryMock,
   type DatabaseConnectionMock,
 } from '../../mocks'
-import { CarBuilder } from '../car/car.builder'
 import { UserID } from '../user'
 import { UserBuilder } from '../user/user.builder'
 
@@ -79,7 +78,6 @@ describe('BookingService', () => {
   describe.skip('create', () => {
     xit('should create a booking', async () => {
       const user = new UserBuilder().build()
-      const car = new CarBuilder().with(user).build()
       const booking = new BookingBuilder()
         .withRenter(user.id)
         .withState(BookingState.PENDING)
