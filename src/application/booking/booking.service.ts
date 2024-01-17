@@ -10,7 +10,11 @@ import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
-import { BookingOverlapError, BookingYourOwnCarError,BookingsStateTransitionError } from './error'
+import {
+  BookingOverlapError,
+  BookingYourOwnCarError,
+  BookingsStateTransitionError,
+} from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -50,7 +54,7 @@ export class BookingService implements IBookingService {
   private validateStateTransition(
     currentState: BookingState,
     newState: BookingState,
-    bookingId:BookingID
+    bookingId: BookingID,
   ): void {
     const isValidTransition =
       (currentState === BookingState.PENDING &&
@@ -61,10 +65,9 @@ export class BookingService implements IBookingService {
         newState === BookingState.RETURNED)
 
     if (!isValidTransition) {
-  throw  new BookingsStateTransitionError(bookingId)
+      throw new BookingsStateTransitionError(bookingId)
     }
   }
-
 
   private async checkCarOwner(carId: CarID, renterId: UserID): Promise<void> {
     const { ownerId } = await this.carService.get(carId)
@@ -103,7 +106,7 @@ export class BookingService implements IBookingService {
     return this.databaseConnection.transactional(async tx => {
       const booking = await this.bookingRepository.get(tx, bookingId)
       if (updates.state !== undefined) {
-        this.validateStateTransition(booking.state, updates.state,bookingId)
+        this.validateStateTransition(booking.state, updates.state, bookingId)
       }
       const updatedBooking = new Booking({
         ...booking,
@@ -114,6 +117,4 @@ export class BookingService implements IBookingService {
       return this.bookingRepository.update(tx, updatedBooking)
     })
   }
-
-
 }
