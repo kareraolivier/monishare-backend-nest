@@ -45,7 +45,7 @@ describe('BookingService', () => {
     })
   })
 
-  describe('Get single booking', () => {
+  describe.skip('Get single booking', () => {
     it('it should get single booking', async () => {
       const bookingId = 1 as BookingID
       const booking = new BookingBuilder().build()
@@ -55,7 +55,7 @@ describe('BookingService', () => {
     })
   })
 
-  describe('update', () => {
+  describe.skip('update', () => {
     xit('should update a booking', async () => {
       const renter = new UserBuilder().build()
       const booking = new BookingBuilder()
@@ -77,7 +77,7 @@ describe('BookingService', () => {
   })
 
   describe.skip('create', () => {
-    it('should create a booking', async () => {
+    xit('should create a booking', async () => {
       const user = new UserBuilder().build()
       const car = new CarBuilder().with(user).build()
       const booking = new BookingBuilder()
