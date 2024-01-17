@@ -4,7 +4,7 @@ import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
 import { type CarID, ICarService } from '../car'
-import { UserID } from '../user'
+import { AccessDeniedError, UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
@@ -13,7 +13,6 @@ import { type IBookingService } from './booking.service.interface'
 import {
   BookingOverlapError,
   BookingYourOwnCarError,
-  BookingsStateTransitionError,
 } from './error'
 
 @Injectable()
@@ -65,7 +64,7 @@ export class BookingService implements IBookingService {
         newState === BookingState.RETURNED)
 
     if (!isValidTransition) {
-      throw new BookingsStateTransitionError(bookingId)
+      throw new AccessDeniedError(currentState, bookingId)
     }
   }
 
