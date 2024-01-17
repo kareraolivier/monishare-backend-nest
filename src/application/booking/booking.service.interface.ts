@@ -20,5 +20,5 @@ export abstract class IBookingService {
 
   public abstract getAll(): Promise<Booking[]>
 
-  public abstract get(id: BookingID): Promise<Booking>
+  public abstract get(id: BookingID, userId: UserID): Promise<Booking>
 }

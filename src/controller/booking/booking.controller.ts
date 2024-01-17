@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   UseGuards,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
@@ -30,6 +31,7 @@ import {
   BookingState,
   BookingOverlapError,
   BookingYourOwnCarError,
+  AccessDeniedError,
 } from '../../application'
 import { ValidationError } from '../../util'
 import { AuthenticationGuard } from '../authentication.guard'
@@ -85,11 +87,20 @@ export class BookingController {
   @Get(':id')
   public async get(
     @Param('id', ParseIntPipe) id: BookingID,
+    @CurrentUser() user: User,
   ): Promise<BookingDTO> {
-    if (!id) throw new BadRequestException('Invalid booking ID.')
+    try {
+      if (!id) throw new BadRequestException('Invalid booking ID.')
 
-    const booking = await this.bookingService.get(id)
-    return BookingDTO.fromModel(booking)
+      const booking = await this.bookingService.get(id, user.id)
+      return BookingDTO.fromModel(booking)
+    } catch (error) {
+      if (error instanceof AccessDeniedError)
+        throw new UnauthorizedException(
+          'You are not allowed to access this information',
+        )
+      throw error
+    }
   }
 
   @ApiOperation({

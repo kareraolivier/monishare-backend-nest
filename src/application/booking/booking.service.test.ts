@@ -1,11 +1,14 @@
 import { bookings } from '../../../jest.integration-test-setup'
 import {
+  CarRepositoryMock,
+  mockBookingRepository,
+  mockCarRepository,
+  mockDatabaseConnection,
   type BookingRepositoryMock,
   type DatabaseConnectionMock,
-  mockBookingRepository,
-  mockDatabaseConnection,
 } from '../../mocks'
 import { CarService } from '../car'
+import { UserID } from '../user'
 import { UserBuilder } from '../user/user.builder'
 
 import { type BookingID } from './booking'
@@ -14,17 +17,20 @@ import { BookingBuilder } from './booking.builder'
 import { BookingService } from './booking.service'
 
 describe('BookingService', () => {
-  let carService: CarService
   let bookingService: BookingService
+  let carService: CarService
+  let carRepositoryMock: CarRepositoryMock
   let bookingRepositoryMock: BookingRepositoryMock
   let databaseConnectionMock: DatabaseConnectionMock
 
   beforeEach(() => {
+    carRepositoryMock = mockCarRepository()
     bookingRepositoryMock = mockBookingRepository()
     databaseConnectionMock = mockDatabaseConnection()
 
     bookingService = new BookingService(
       carService,
+      carRepositoryMock,
       bookingRepositoryMock,
       databaseConnectionMock,
     )
@@ -44,7 +50,7 @@ describe('BookingService', () => {
       const bookingId = 1 as BookingID
       const booking = new BookingBuilder().build()
       bookingRepositoryMock.get.mockResolvedValue(booking)
-      const actual = await bookingService.get(bookingId)
+      const actual = await bookingService.get(bookingId, 1 as UserID)
       expect(actual).toEqual(bookings.beatrice)
     })
   })

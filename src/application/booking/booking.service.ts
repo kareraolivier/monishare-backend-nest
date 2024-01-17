@@ -3,7 +3,7 @@ import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
-import { type CarID, ICarService } from '../car'
+import { type CarID, ICarService, ICarRepository } from '../car'
 import { AccessDeniedError, UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
@@ -17,16 +17,19 @@ export class BookingService implements IBookingService {
   private readonly carService: ICarService
   private readonly bookingRepository: IBookingRepository
   private readonly databaseConnection: IDatabaseConnection
+  private readonly carRepository: ICarRepository
   private readonly logger: Logger
 
   public constructor(
     carService: ICarService,
+    carRepository: ICarRepository,
     bookingRepository: IBookingRepository,
     databaseConnection: IDatabaseConnection,
   ) {
     this.carService = carService
     this.bookingRepository = bookingRepository
     this.databaseConnection = databaseConnection
+    this.carRepository = carRepository
     this.logger = new Logger(BookingService.name)
   }
 
@@ -77,10 +80,16 @@ export class BookingService implements IBookingService {
     })
     return result
   }
-  public async get(id: BookingID): Promise<Booking> {
-    return this.databaseConnection.transactional(tx =>
-      this.bookingRepository.get(tx, id),
-    )
+  public async get(id: BookingID, userId: UserID): Promise<Booking> {
+    return this.databaseConnection.transactional(async tx => {
+      const booking = await this.bookingRepository.get(tx, id)
+      const carInfo = await this.carRepository.get(tx, booking.carId)
+
+      if (booking.renterId !== userId && carInfo.ownerId !== userId) {
+        throw new AccessDeniedError('booking', id)
+      }
+      return booking
+    })
   }
 
   public async create(
