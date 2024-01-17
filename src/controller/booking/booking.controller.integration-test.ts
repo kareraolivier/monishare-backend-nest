@@ -126,6 +126,42 @@ describe('bookingController', () => {
     })
   })
 
+  describe('create', () => {
+    it('should create a new booking', async () => {
+      const booking = new BookingBuilder().withRenter(42).build()
+      bookingServiceMock.create.mockResolvedValue(booking)
+      authenticationGuardMock.user = UserBuilder.from(user).build()
+
+      await request(app.getHttpServer())
+        .post(`/bookings`)
+        .send({
+          carId: booking.carId,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+        })
+        .expect(HttpStatus.CREATED)
+        .expect({
+          id: booking.id,
+          carId: booking.carId,
+          renterId: booking.renterId,
+          state: booking.state,
+          startDate: booking.startDate.toISOString(),
+          endDate: booking.endDate.toISOString(),
+        })
+
+      expect(bookingServiceMock.create).toHaveBeenCalledWith(
+        {
+          carId: booking.carId,
+          renterId: booking.renterId,
+          state: booking.state,
+          startDate: booking.startDate.toISOString(),
+          endDate: booking.endDate.toISOString(),
+        },
+        user.id,
+      )
+    })
+  })
+
   it('should get 404 not found when route does not exist', async () => {
     await request(app.getHttpServer())
       .get(`/booking`)
@@ -140,24 +176,28 @@ describe('bookingController', () => {
         .expect(HttpStatus.NOT_FOUND)
     })
 
-    xit('should update a new booking', async () => {
+    it('should update a new booking', async () => {
       const bookingId = 42
       const newUpdatedBooking = new BookingBuilder().withId(bookingId).build()
       bookingServiceMock.update.mockResolvedValue(newUpdatedBooking)
 
       authenticationGuardMock.user = UserBuilder.from(user).build()
-
+      const expected = {
+        ...newUpdatedBooking,
+        startDate: '2024-02-08T14:07:27.828Z',
+        endDate: '2024-02-09T14:07:28.828Z',
+      }
       await request(app.getHttpServer())
         .patch(`/bookings/${bookingId}`)
         .send({
           ...newUpdatedBooking,
         })
         .expect(HttpStatus.OK)
-        .expect({ ...newUpdatedBooking })
+        .expect({ ...expected })
 
       expect(bookingServiceMock.update).toHaveBeenCalledWith(
         bookingId,
-        newUpdatedBooking,
+        { ...expected },
         bookingId,
       )
     })
