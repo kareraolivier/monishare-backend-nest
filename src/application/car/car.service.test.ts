@@ -3,6 +3,8 @@ import {
   type DatabaseConnectionMock,
   mockCarRepository,
   mockDatabaseConnection,
+  BookingRepositoryMock,
+  mockBookingRepository,
 } from '../../mocks'
 import { UserBuilder } from '../user/user.builder'
 
@@ -11,14 +13,20 @@ import { CarService } from './car.service'
 
 describe('CarService', () => {
   let carService: CarService
+  let bookingRepositoryMock: BookingRepositoryMock
   let carRepositoryMock: CarRepositoryMock
   let databaseConnectionMock: DatabaseConnectionMock
 
   beforeEach(() => {
+    bookingRepositoryMock = mockBookingRepository()
     carRepositoryMock = mockCarRepository()
     databaseConnectionMock = mockDatabaseConnection()
 
-    carService = new CarService(carRepositoryMock, databaseConnectionMock)
+    carService = new CarService(
+      bookingRepositoryMock,
+      carRepositoryMock,
+      databaseConnectionMock,
+    )
   })
 
   describe.skip('update', () => {
