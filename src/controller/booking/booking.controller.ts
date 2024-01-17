@@ -8,7 +8,6 @@ import {
   ParseIntPipe,
   UseGuards,
   BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common'
 import {
   ApiBadRequestResponse,
@@ -30,8 +29,8 @@ import {
   type User,
   BookingState,
   BookingOverlapError,
-  BookingYourOwnCarError,
-  AccessDeniedError,
+  BookingOwnCarError,
+  BookingStateTransitionError,
 } from '../../application'
 import { ValidationError } from '../../util'
 import { AuthenticationGuard } from '../authentication.guard'
@@ -90,15 +89,9 @@ export class BookingController {
     @CurrentUser() user: User,
   ): Promise<BookingDTO> {
     try {
-      if (!id) throw new BadRequestException('Invalid booking ID.')
-
       const booking = await this.bookingService.get(id, user.id)
       return BookingDTO.fromModel(booking)
     } catch (error) {
-      if (error instanceof AccessDeniedError)
-        throw new UnauthorizedException(
-          'You are not allowed to access this information',
-        )
       throw error
     }
   }
@@ -122,8 +115,15 @@ export class BookingController {
     @Param('id', ParseIntPipe) bookingId: BookingID,
     @Body() data: PatchBookingDTO,
   ): Promise<BookingDTO> {
-    const booking = await this.bookingService.update(bookingId, data, user.id)
-    return BookingDTO.fromModel(booking)
+    try {
+      const booking = await this.bookingService.update(bookingId, data, user.id)
+      return BookingDTO.fromModel(booking)
+    } catch (error) {
+      if (error instanceof BookingStateTransitionError) {
+        throw new BadRequestException(error.message)
+      }
+      throw error
+    }
   }
   @ApiOperation({
     summary: 'Create a new booking.',
@@ -157,7 +157,7 @@ export class BookingController {
       if (error instanceof ValidationError) {
         throw new BadRequestException(error.message)
       }
-      if (error instanceof BookingYourOwnCarError) {
+      if (error instanceof BookingOwnCarError) {
         throw new BadRequestException(error.message)
       }
       if (error instanceof BookingOverlapError) {

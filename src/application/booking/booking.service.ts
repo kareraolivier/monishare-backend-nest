@@ -3,14 +3,15 @@ import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
+import { AccessDeniedError } from '../access-denied.error'
 import { type CarID, ICarRepository, Car } from '../car'
-import { AccessDeniedError, type UserID } from '../user'
+import { type UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
-import { BookingOverlapError, BookingYourOwnCarError } from './error'
+import { BookingOverlapError, BookingOwnCarError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -31,7 +32,7 @@ export class BookingService implements IBookingService {
     this.logger = new Logger(BookingService.name)
   }
 
-  private async getOverlapBookings(
+  private async checkOverlapBookings(
     carId: CarID,
     startDate: Dayjs,
     endDate: Dayjs,
@@ -72,11 +73,9 @@ export class BookingService implements IBookingService {
   }
 
   public async getAll(): Promise<Booking[]> {
-    const result = this.databaseConnection.transactional(async tx => {
-      const bookings = await this.bookingRepository.getAll(tx)
-      return bookings
-    })
-    return result
+    return this.databaseConnection.transactional(
+      async tx => await this.bookingRepository.getAll(tx),
+    )
   }
   public async get(id: BookingID, userId: UserID): Promise<Booking> {
     return this.databaseConnection.transactional(async tx => {
@@ -95,8 +94,8 @@ export class BookingService implements IBookingService {
     return await this.databaseConnection.transactional(async tx => {
       const { carId, startDate, endDate } = data
       const { ownerId } = await this.checkCarOwner(carId)
-      if (ownerId === renterId) throw new BookingYourOwnCarError(carId)
-      await this.getOverlapBookings(carId, startDate, endDate)
+      if (ownerId === renterId) throw new BookingOwnCarError(carId)
+      await this.checkOverlapBookings(carId, startDate, endDate)
       return this.bookingRepository.insert(tx, data)
     })
   }

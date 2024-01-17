@@ -57,11 +57,13 @@ describe('BookingRepository', () => {
 
   describe('update', () => {
     it('should update a booking ', async () => {
-      const updated = {
+      const bookingData = {
         ...bookings.beatrice,
       }
-      const actual = await execute(tx => bookingRepository.update(tx, updated))
-      expect(actual).toEqual(updated)
+      const actual = await execute(tx =>
+        bookingRepository.update(tx, bookingData),
+      )
+      expect(actual).toEqual(bookingData)
     })
 
     it('should throw if a booking does not exist', async () => {
@@ -81,15 +83,17 @@ describe('BookingRepository', () => {
 
   describe('create', () => {
     it('should create new booking', async () => {
-      const create = {
+      const bookingData = {
         carId: 1 as CarID,
         renterId: 3 as UserID,
         state: BookingState.PENDING,
         startDate: dayjs('2024-02-08T14:07:27.828Z'),
         endDate: dayjs('2024-02-09T14:07:28.828Z'),
       }
-      const actual = await execute(tx => bookingRepository.insert(tx, create))
-      expect(actual).toEqual({ ...create, id: 2 as BookingID })
+      const actual = await execute(tx =>
+        bookingRepository.insert(tx, bookingData),
+      )
+      expect(actual).toEqual({ ...bookingData, id: 2 as BookingID })
     })
   })
 })
