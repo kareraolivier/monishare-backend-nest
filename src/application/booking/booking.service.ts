@@ -4,9 +4,10 @@ import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
 import { type CarID, ICarRepository } from '../car'
-import { UserID } from '../user'
+import { AccessDeniedError, type UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
+import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
 import { BookingOverlapError, BookingYourOwnCarError } from './error'
@@ -26,6 +27,7 @@ export class BookingService implements IBookingService {
     this.carRepository = carRepository
     this.bookingRepository = bookingRepository
     this.databaseConnection = databaseConnection
+    this.carRepository = carRepository
     this.logger = new Logger(BookingService.name)
   }
 
@@ -45,6 +47,23 @@ export class BookingService implements IBookingService {
       if (hasOverlap) throw new BookingOverlapError(carId)
     })
   }
+  private validateStateTransition(
+    currentState: BookingState,
+    newState: BookingState,
+    bookingId: BookingID,
+  ): void {
+    const isValidTransition =
+      (currentState === BookingState.PENDING &&
+        [BookingState.ACCEPTED, BookingState.DECLINED].includes(newState)) ||
+      (currentState === BookingState.ACCEPTED &&
+        newState === BookingState.PICKEDUP) ||
+      (currentState === BookingState.PICKEDUP &&
+        newState === BookingState.RETURNED)
+
+    if (!isValidTransition) {
+      throw new AccessDeniedError(currentState, bookingId)
+    }
+  }
 
   private async checkCarOwner(carId: CarID, renterId: UserID): Promise<void> {
     return this.databaseConnection.transactional(async tx => {
@@ -60,10 +79,16 @@ export class BookingService implements IBookingService {
     })
     return result
   }
-  public async get(id: BookingID): Promise<Booking> {
-    return this.databaseConnection.transactional(tx =>
-      this.bookingRepository.get(tx, id),
-    )
+  public async get(id: BookingID, userId: UserID): Promise<Booking> {
+    return this.databaseConnection.transactional(async tx => {
+      const booking = await this.bookingRepository.get(tx, id)
+      const carInfo = await this.carRepository.get(tx, booking.carId)
+
+      if (booking.renterId !== userId && carInfo.ownerId !== userId) {
+        throw new AccessDeniedError('booking', id)
+      }
+      return booking
+    })
   }
 
   public async create(
@@ -81,10 +106,12 @@ export class BookingService implements IBookingService {
   public async update(
     bookingId: BookingID,
     updates: Partial<Except<BookingProperties, 'id'>>,
-    // currentUserId: UserID,
   ): Promise<Booking> {
     return this.databaseConnection.transactional(async tx => {
       const booking = await this.bookingRepository.get(tx, bookingId)
+      if (updates.state !== undefined) {
+        this.validateStateTransition(booking.state, updates.state, bookingId)
+      }
       const updatedBooking = new Booking({
         ...booking,
         ...updates,
