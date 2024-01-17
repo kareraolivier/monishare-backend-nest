@@ -3,7 +3,8 @@ import dayjs, { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
-import { type CarID, ICarRepository, Car } from '../car'
+import { type CarID, Car } from '../car/car'
+import { ICarRepository } from '../car/car.repository.interface'
 import { AccessDeniedError, type UserID } from '../user'
 
 import { Booking, BookingID, BookingProperties } from './booking'
