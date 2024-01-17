@@ -14,6 +14,7 @@
   "scripts": {
     "build": "nest build --path tsconfig.build.json",
     "format": "npm run format:prettier && npm run format:eslint",
+    "format:eslint": "eslint --fix '{src,migrations,test}/**/*.ts'",
     "format:prettier": "prettier --write '{src,migrations,test}/**/*.{ts,json}'",
     "start": "nest start",
     "start:dev": "nest start --watch",
