@@ -67,6 +67,23 @@ export class BookingRepository {
     return booking
   }
 
+  public async update(tx: Transaction, booking: Booking): Promise<Booking> {
+    const row = await tx.oneOrNone<Row>(
+      `
+      UPDATE bookings SET
+        state = $(state)
+      WHERE
+        id = $(id)
+       RETURNING *`,
+      { ...booking },
+    )
+
+    if (row === null) {
+      throw new BookingNotFoundError(booking.id)
+    }
+    return rowToDomain(row)
+  }
+
   public async insert(
     tx: Transaction,
     booking: Except<BookingProperties, 'id'>,
@@ -88,6 +105,7 @@ export class BookingRepository {
       ) RETURNING *`,
       { ...booking },
     )
+
     return rowToDomain(row)
   }
 }

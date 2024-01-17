@@ -4,11 +4,11 @@ import dayjs from 'dayjs'
 import request from 'supertest'
 
 import {
-  BookingID,
+  type BookingID,
   BookingState,
-  CarID,
+  type CarID,
   IBookingService,
-  UserID,
+  type UserID,
 } from '../../application'
 import { UserBuilder, BookingBuilder } from '../../builders'
 import {
@@ -130,5 +130,36 @@ describe('bookingController', () => {
     await request(app.getHttpServer())
       .get(`/booking`)
       .expect(HttpStatus.NOT_FOUND)
+  })
+
+  describe('update', () => {
+    const bookingId = 3
+    it('should get 404 not found when route is not exist', async () => {
+      await request(app.getHttpServer())
+        .patch(`/booking/${bookingId}`)
+        .expect(HttpStatus.NOT_FOUND)
+    })
+
+    xit('should update a new booking', async () => {
+      const bookingId = 42
+      const newUpdatedBooking = new BookingBuilder().withId(bookingId).build()
+      bookingServiceMock.update.mockResolvedValue(newUpdatedBooking)
+
+      authenticationGuardMock.user = UserBuilder.from(user).build()
+
+      await request(app.getHttpServer())
+        .patch(`/bookings/${bookingId}`)
+        .send({
+          ...newUpdatedBooking,
+        })
+        .expect(HttpStatus.OK)
+        .expect({ ...newUpdatedBooking })
+
+      expect(bookingServiceMock.update).toHaveBeenCalledWith(
+        bookingId,
+        newUpdatedBooking,
+        bookingId,
+      )
+    })
   })
 })
