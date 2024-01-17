@@ -65,10 +65,7 @@ describe('BookingService', () => {
         .mockResolvedValue(updatedBooking)
 
       await expect(
-        bookingService.update(
-          booking.id,
-          { state: BookingState.ACCEPTED },
-        ),
+        bookingService.update(booking.id, { state: BookingState.ACCEPTED }),
       ).resolves.toEqual(updatedBooking)
     })
   })

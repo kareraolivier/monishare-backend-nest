@@ -10,10 +10,7 @@ import { Booking, BookingID, BookingProperties } from './booking'
 import { BookingState } from './booking-state'
 import { IBookingRepository } from './booking.repository.interface'
 import { type IBookingService } from './booking.service.interface'
-import {
-  BookingOverlapError,
-  BookingYourOwnCarError,
-} from './error'
+import { BookingOverlapError, BookingYourOwnCarError } from './error'
 
 @Injectable()
 export class BookingService implements IBookingService {
