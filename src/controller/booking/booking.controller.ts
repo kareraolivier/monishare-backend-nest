@@ -21,6 +21,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger'
+import dayjs from 'dayjs'
 
 import {
   type BookingID,
@@ -145,6 +146,8 @@ export class BookingController {
     try {
       const bookingData = {
         ...data,
+        startDate: dayjs(data.startDate),
+        endDate: dayjs(data.endDate),
         state: BookingState.PENDING,
         renterId: renter.id,
       }

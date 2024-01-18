@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common'
-import dayjs, { Dayjs } from 'dayjs'
+import { Dayjs } from 'dayjs'
 import { Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
@@ -40,11 +40,10 @@ export class BookingService implements IBookingService {
   ) {
     return await this.databaseConnection.transactional(async tx => {
       const allBookings = await this.bookingRepository.findByCarId(tx, carId)
-      const start = dayjs(startDate)
-      const end = dayjs(endDate)
       const hasOverlap = allBookings?.some(
         booking =>
-          start.isBefore(booking.endDate) && end.isAfter(booking.startDate),
+          startDate.isBefore(booking.endDate) &&
+          endDate.isAfter(booking.startDate),
       )
       if (hasOverlap) throw new BookingOverlapError(carId)
     })
