@@ -163,8 +163,6 @@ describe('bookingController', () => {
       expect(bookingServiceMock.create).toHaveBeenCalledWith(
         {
           ...bookingData,
-          startDate: '2024-04-01T14:07:27.828Z',
-          endDate: '2024-04-10T14:07:28.828Z',
           state: BookingState.PENDING,
           renterId: user.id,
         },
@@ -179,8 +177,6 @@ describe('bookingController', () => {
         carId: 1,
         renterId: 42,
         state: 'PENDING',
-        startDate: '2024-02-08T14:07:27.828Z',
-        endDate: '2024-02-09T07:20:56.959Z',
       }
 
       bookingServiceMock.create.mockRejectedValue(
