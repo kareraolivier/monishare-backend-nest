@@ -3,23 +3,30 @@ import { type Except } from 'type-fest'
 
 import { IDatabaseConnection } from '../../persistence/database-connection.interface'
 import { AccessDeniedError } from '../access-denied.error'
+import { Booking } from '../booking/booking'
+import { BookingState } from '../booking/booking-state'
+import { IBookingRepository } from '../booking/booking.repository.interface'
 import { type UserID } from '../user'
 
 import { Car, type CarID, type CarProperties } from './car'
+import { CarState } from './car-state'
 import { ICarRepository } from './car.repository.interface'
 import { type ICarService } from './car.service.interface'
 import { DuplicateLicensePlateError } from './error'
 
 @Injectable()
 export class CarService implements ICarService {
+  private readonly bookingRepository: IBookingRepository
   private readonly carRepository: ICarRepository
   private readonly databaseConnection: IDatabaseConnection
   private readonly logger: Logger
 
   public constructor(
+    bookingRepository: IBookingRepository,
     carRepository: ICarRepository,
     databaseConnection: IDatabaseConnection,
   ) {
+    this.bookingRepository = bookingRepository
     this.carRepository = carRepository
     this.databaseConnection = databaseConnection
     this.logger = new Logger(CarService.name)
@@ -33,7 +40,11 @@ export class CarService implements ICarService {
       throw new DuplicateLicensePlateError(licensePlate)
     }
   }
-
+  public async getCarBookings(id: CarID): Promise<Booking[] | null> {
+    return this.databaseConnection.transactional(tx =>
+      this.bookingRepository.findByCarId(tx, id),
+    )
+  }
   public async create(data: Except<CarProperties, 'id'>): Promise<Car> {
     return await this.databaseConnection.transactional(async tx => {
       if (data.licensePlate)
@@ -63,8 +74,22 @@ export class CarService implements ICarService {
   ): Promise<Car> {
     return this.databaseConnection.transactional(async tx => {
       const car = await this.carRepository.get(tx, carId)
-      if (currentUserId !== car.ownerId)
+      if (currentUserId !== car.ownerId) {
+        const bookings = await this.getCarBookings(carId)
+        const booking = bookings?.find(
+          book => book.state === BookingState.PICKEDUP,
+        )
+        if (booking?.renterId == currentUserId) {
+          return this.carRepository.update(tx, {
+            ...car,
+            state:
+              car.state === CarState.LOCKED
+                ? CarState.UNLOCKED
+                : CarState.LOCKED,
+          })
+        }
         throw new AccessDeniedError(Car.name, carId)
+      }
       if (
         typeof updates.licensePlate === 'string' &&
         car.licensePlate !== updates.licensePlate

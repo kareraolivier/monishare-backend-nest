@@ -7,17 +7,21 @@ import {
   PostgreSqlContainer,
   type StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql'
+import dayjs from 'dayjs'
 import * as glob from 'glob'
 import pgPromise, { IDatabase } from 'pg-promise'
 
 import {
+  Booking,
+  BookingState,
   Car,
-  type CarID,
   CarState,
   CarType,
-  type CarTypeID,
   FuelType,
   User,
+  type BookingID,
+  type CarID,
+  type CarTypeID,
   type UserID,
 } from './src/application'
 import { DatabaseConnectionConfig, type Transaction } from './src/persistence'
@@ -25,7 +29,13 @@ import { DatabaseConnectionConfig, type Transaction } from './src/persistence'
 const execFile = promisify(execFileCallback)
 
 const IMAGE_NAME = 'postgres:15-alpine'
-const PG_MIGRATE = join(__dirname, 'node_modules', '.bin', 'node-pg-migrate')
+const PG_MIGRATE = join(
+  __dirname,
+  'node_modules',
+  'node-pg-migrate',
+  'bin',
+  'node-pg-migrate',
+)
 const LOCAL_FIXTURE_DIR = join(__dirname, 'fixture')
 const CONTAINER_FIXTURE_DIR = '/fixture'
 const JEST_WORKER_ID = process.env.JEST_WORKER_ID ?? ''
@@ -105,6 +115,17 @@ export const cars = {
     horsepower: 125,
     licensePlate: 'FOO-BAR 42',
     info: 'Please no scratches!',
+  }),
+}
+
+export const bookings = {
+  beatrice: new Booking({
+    id: 1 as BookingID,
+    carId: cars.beatrice.id,
+    renterId: users.izzedin.id,
+    state: BookingState.PENDING,
+    startDate: dayjs('2024-02-08T14:07:27.828Z'),
+    endDate: dayjs('2024-02-09T14:07:28.828Z'),
   }),
 }
 
